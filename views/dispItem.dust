@@ -1,0 +1,67 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+
+	{<dItem}
+		
+	<div id="content" class="span10">
+
+		<ul class="breadcrumb">
+			<li>
+				<i class="icon-home"></i>
+				<a href="/"> Home</a> 
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-trash"></i>
+				<a href="#"> View Disposal Requests</a>
+			</li>
+		</ul>
+
+		<div class="box-content">
+			<div class="box span12">
+				<div class="box-header" data-original-title>
+					<h2><i class="halflings-icon trash"></i><span class="break"></span>Disposal Requests</h2>
+				</div>
+				<div class="box-content">
+					<table class="table table-striped table-bordered bootstrap-datatable">
+					  <thead>
+						  <tr>
+							  <th style="width: 200px"><center>Equipment</th>
+							  <th style="width: 100px"><center>Property No.</th>
+							  <th style="width: 140px"><center>Component No.</th>
+							  <th style="width: 140px"><center>Date of Request</th>
+							  <th></th>
+						  </tr>
+					  </thead>   
+					  <tbody>{#mobiletrans}
+							<tr style="height: 15px">
+								<form class="form-horizontal" method="post" action="searchIndivEquipment">
+								<td style="width: 20px"><center>{article_name}</center></td>
+								<td style="width: 20px"><center>{property_no}</center></td>
+								<td style="width: 20px"><center>{component_no}</center></td>
+								<td style="width: 50px"><center>{month}/{day}/{year}</center></td>
+								<td class="center" style="width: 50px">
+									<center><input type="hidden" name="holder" value="{article_name}"></input>
+									<input type="hidden" name="propno" value="{property_no}"></input>
+									<input type="hidden" name="comno" value="{component_no}"></input>
+									<input type="submit" class="btn btn-small btn-info" value="View Details" style="margin-left: 3px">
+									<input type="hidden" id="something" name="editable" value="false" />
+								</td>
+								</form>		
+							</tr>{/mobiletrans}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+	</div>
+
+</body>
+{/dItem}
+</html>

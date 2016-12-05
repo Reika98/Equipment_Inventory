@@ -1,0 +1,152 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="shortcut icon" href="img/favicon.ico">
+	<script type="text/javascript">
+		function validateForm() {
+			var x = document.getElementById("error").innerHTML;
+			if (x === "Office and Staff doesnt match!") {
+				alert("Staff and Office doesnt match!");
+				return false;
+			}
+		}
+	</script>
+</head>
+
+<body>
+
+	{<editequipmentassignment}
+			<!-- start: Content -->
+	<div id="content" class="span10">
+	<ul class="breadcrumb">
+		<li>
+			<i class="icon-home"></i>
+			<a href="/"> Home</a> 
+			<i class="icon-angle-right"></i>
+		</li>
+		<li>
+			<i class="icon-folder-open"></i>
+			<a href="#"> Manage Equipment</a>
+			<i class="icon-angle-right"></i>
+		</li>
+		<li>
+			<i class="icon-edit"></i>
+			<a href="#">Edit Equipment Assignment</a>
+		</li>
+	</ul>
+
+	{#equipment}
+	<div class="row-fluid sortable">
+	<div class="box span12">
+		<div class="box-header" data-original-title>
+			<h2><i class="halflings-icon edit"></i><span class="break"></span>Edit Equipment Assignment</h2>
+		</div>
+	<div class="box-content">
+		<form class="form-horizontal" method="post" action="editAssignment" onsubmit = "return validateForm()">
+			<fieldset>
+					<input type="hidden" id="office_holder" name = "off" value="{office_id}" />
+					<input type="hidden" id="staff_holder" name = "sta" value="{staff_id}" />
+					<input type="hidden" id="type_holder" name = "propno" value="{property_no}" />
+					<input type="hidden" id="type_holder" name = "comno" value="{component_no}" />
+					<input type="hidden" id="staff_office_id" name = "staff_office_id" value="{office_id}" />
+
+					<div class="control-group">
+						<label class="control-label" for="propno">Property Number</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="propno" type="number"  value="{property_no}" disabled>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="comno">Component Number</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="comno" type="text" value="{component_no}" disabled>
+						</div>
+				  	</div>
+					<div class="control-group">
+				        <label class="control-label" for="selectError1">Office Assigned</label>
+				        <div class="controls">
+					        <select class="input-xlarge focused" id="selectError1" name="office_name" data-rel="chosen" onchange="changeValueStaffOffice()">
+					          <option value="" disabled selected>Choose Office</option>
+					          {#office}
+					            <option value="{office_id}">{office_name}</option>
+					          {/office}
+					        </select>
+					    </div>
+				    </div>
+			    
+				    <script type="text/javascript">
+				    	var val = document.getElementById('office_holder').value;
+					    var sel = document.getElementById('selectError1');
+					    var opts = sel.options;
+					    for(var opt, j = 0; opt = opts[j]; j++) {
+					        if(opt.value == val) {
+					            sel.selectedIndex = j;
+					            break;
+					        }
+					    }
+				    </script>
+
+				  	<div class="control group">
+				        <label class="control-label" for="selectError2">ARE For</label>
+				        <div class="controls">
+				        <select class="input-xlarge focused" id="selectError2" name="staffs" data-rel="chosen" onchange="changeValueStaffOffice()">
+				          <option value="" disabled selected>Choose Staff</option>
+				          {#staff}
+				            <option value="{staff_id}" id="{office_id}"}>{first_name} {middle_init} {last_name}</option>
+				          {/staff}
+				        </select>
+				      </div>
+				    </div>
+				    <div class="control-group">
+				    	<div class="controls">
+				    		<p id="error"></p>
+				    	</div>
+				    </div>
+
+				    <script type="text/javascript">
+				    	var val = document.getElementById('staff_holder').value;
+					    var sel = document.getElementById('selectError2');
+					    var opts = sel.options;
+					    for(var opt, j = 0; opt = opts[j]; j++) {
+					        if(opt.value == val) {
+					            sel.selectedIndex = j;
+					            break;
+					        }
+					    }
+
+					    function changeValueStaffOffice() {
+					    	var staffOffice = document.getElementById('staff_office_id');
+					    	var staOff = staffOffice.value;
+					    	var x = document.getElementById("selectError2").selectedIndex;
+							var y = document.getElementById("selectError2").options;
+							var x1 = document.getElementById("selectError1").selectedIndex;
+							var y1 = document.getElementById("selectError1").options;
+					    	if(y[x].id != y1[x1].value){
+					    		document.getElementById("error").innerHTML = "Office and Staff doesnt match!";
+					    	} else {
+					    		document.getElementById("error").innerHTML = " ";
+					    	}
+					    }
+				    </script>
+
+				    <br>
+
+				    <div class="control-group">
+					<div class="controls">
+						<button type="submit" class="btn btn-meduim btn-info" style ="margin-left: 200px"><i class = "icon-ok"></i> Edit Equipment</button>
+					</div>
+				</div>
+			</fieldset>
+		</form>
+	</div>
+	</div>
+	</div>
+	{/equipment}
+	</div>
+	{/editequipmentassignment}
+
+</body>
+</html>
+

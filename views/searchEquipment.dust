@@ -1,0 +1,62 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+
+<body>
+	
+	{<search}
+	<!-- start: Content -->
+	<div id="content" class="span10">
+		<ul class="breadcrumb">
+			<li>
+				<i class="icon-home"></i>
+				<a href="/"> Home</a> 
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-folder-open"></i>
+				<a href="#"> Manage Equipment</a>
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-search"></i>
+				<a href="#"> Search Equipment</a>
+			</li>
+		</ul>
+
+		<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon search"></i><span class="break"></span>Search</h2>
+					</div>
+		<div class="box-content">
+			<form class="form-horizontal" method="post" action="searchEquipment">
+				<fieldset>
+					<div class="control-group">
+						<label class="control-label" for="article_name">Property Number</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="propno" type="number" length="4" value="{prop}" required>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+				  		<div class="controls">
+				  			<p style="color:red;"><strong>{error}</strong></p>
+				  		</div>
+				  	</div>
+				  	<input type="hidden" name="editable" value="true"></input>
+					<button type="submit" class="btn btn-meduim btn-info" style ="margin-left: 300px">Search</button>
+					<button class="btn btn-meduim" style="margin-left:10px;"><a href="/">Cancel</a></button>
+				</fieldset>
+			</form>
+		</div>
+		</div>	
+	</div>
+	</div>
+	{/search}
+	
+</body>
+</html>
+

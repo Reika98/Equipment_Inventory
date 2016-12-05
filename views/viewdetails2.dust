@@ -1,0 +1,123 @@
+{>"header2"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script type="text/javascript">
+		function validateForm() {
+			var x = document.getElementById("way_of_disposal").value;
+			if (x === "") {
+				alert("Please provide an Appraised Value.");
+				return false;
+			}
+		}
+	</script>
+</head>
+
+<body>
+
+	{<viewdetails2}
+	<!-- start: Content -->
+	<div id="content" class="span10">
+	
+		<ul class="breadcrumb">
+			<li>
+				<i class="icon-home"></i>
+				<a href="/2"> Home</a> 
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-briefcase"></i>
+				<a href="/viewoffices2"> View Office</a>
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-edit"></i>
+				<a href="/viewequipment2"> View Equipment</a>
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-edit"></i>
+				<a href="#"> View Details</a>
+			</li>
+
+		</ul>
+			{#equipment}
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon list-alt"></i><span class="break"></span>Equipment Info</h2>
+					</div>
+					<div class="box-content">
+						<form class="form-horizontal" method="post">
+							<fieldset>
+								<input type="hidden" id="office_holder" name = "off" value="{office_id}" />
+								<input type="hidden" id="staff_holder" name = "sta" value="{staff_id}" />
+								<input type="hidden" id="type_holder" name = "typ" value="{type}" />
+								<input type="hidden" id="type_holder" name = "propno" value="{property_no}" />
+								<input type="hidden" id="type_holder" name = "comno" value="{comno}" />
+								<div class="control-group">
+									<label class="control-label" for="propno">Property Number</label>
+									<div class="controls">
+									 	<input class="input-xlarge focused" type="number"  value="{property_no}" disabled>
+									</div>
+							  	</div>
+							  	<div class="control-group">
+									<label class="control-label" for="comno">Component Number</label>
+									<div class="controls">
+									 	<input class="input-xlarge focused" type="number" value="{component_no}" disabled>
+									</div>
+							  	</div>
+							  	<div class="control-group">
+									<label class="control-label" for="artname">Article Name</label>
+									<div class="controls">
+									 	<input class="input-xlarge focused" type="text" value="{article_name}" disabled>
+									</div>
+							  	</div>
+							  	<div class="control-group">
+									<label class="control-label" for="description">Description</label>
+									<div class="controls">
+									 	<textarea class="input-xlarge focused" disabled>{description}</textarea>
+									</div>
+							  	</div>
+							  	<div class="control-group">
+									<label class="control-label" for="cost">Unit Cost</label>
+									<div class="controls">
+									 	<input class="input-xlarge focused" type="number" value="{unit_cost}" disabled>
+									</div>
+							  	</div>
+							  	<div class="control-group">
+									<label class="control-label" for="date">Acquisition Date</label>
+									<div class="controls">
+									 	<input class="input-xlarge focused" type="text" value="{year}-{month}-{day}" disabled>
+									</div>
+							  	</div>
+							  	<div class="control-group">
+									<label class="control-label" for="date">Office Assigned</label>
+									<div class="controls">
+									 	<input class="input-xlarge focused" type="text" value="{office_name}" disabled>
+									</div>
+							  	</div>
+							  	<div class="control-group">
+									<label class="control-label" for="date">ARE for</label>
+									<div class="controls">
+									 	<input class="input-xlarge focused" type="text" value="{first_name} {middle_init} {last_name}" disabled>
+									</div>
+							  	</div>
+							  	<div class="control-group">
+									<label class="control-label" for="date">Type</label>
+									<div class="controls">
+									 	<input class="input-xlarge focused" type="text" value="{type}" disabled>
+									</div>
+							  	</div>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		{/equipment}
+	</div>
+	{/viewdetails2}
+</body>
+</html>
+

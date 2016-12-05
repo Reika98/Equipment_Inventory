@@ -1,0 +1,207 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Set Schedule</title>
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="js/jquery-1.9.1.min.js"></script>
+    <script src="js/bootstrap-datepicker.js"></script>
+	<script src="js/jquery-ui-1.10.0.custom.min.js"></script>
+	<script src='js/fullcalendar.min.js'></script>
+	<script src="js/jquery.cleditor.min.js"></script>
+	<script>
+		$('#date2').datepicker({
+		    dateFormat: "mm/dd/yy" 
+	    });
+
+	    $("#date1").datepicker({
+	        dateFormat: "mm/dd/yy", 
+	        minDate: 0,
+	        onSelect: function(date){            
+	            var date1 = $('#date1').datepicker('getDate');           
+	            var date = new Date( Date.parse( date1 ) ); 
+	            date.setDate( date.getDate() );        
+	            var newDate = date.toDateString(); 
+	            newDate = new Date( Date.parse( newDate ) );                      
+	            $('#date2').datepicker("option","minDate",newDate);            
+	        }
+	    });
+    </script>
+
+	<script>
+		function validate(){
+			var date1 = new Date(document.getElementById("date1").value);
+			var date2 = new Date(document.getElementById("date2").value);
+			{#sched}
+				var x1 = {start_year}; x1 = x1.toString();
+				var x2 = {start_month}; x2 = x2.toString();
+				var x3 = {start_day}; x3 = x3.toString();
+				var y1 = {end_year}; y1 = y1.toString();
+				var y2 = {end_month}; y2 = y2.toString();
+				var y3 = {end_day}; y3 = y3.toString();
+				var x = x1.concat("-",x2,"-",x3);
+				var y = y1.concat("-",y2,"-",y3);
+				var storedDate1 = new Date(x);
+				var storedDate2 = new Date(y);
+				console.log(date1+" >= "+storedDate1+" && "+date1+" <= "+storedDate2);
+				console.log(date1 >= storedDate1 && date1 <= storedDate2);
+				if(date1 >= storedDate1 && date1 <= storedDate2 || date2 >= storedDate1 && date2 <= storedDate2){
+					alert("There are prior appointments that are scheduled on the dates specified");
+					return false;
+				}
+			{/sched}
+
+			if(date2 < date1){
+				alert("Start date is bigger than end date");
+				return false;
+			}
+		}
+		function refresh() {
+			location.reload();
+		}
+	</script>
+
+	<script>
+		$(document).ready(function() {
+			$('#calend').fullCalendar({
+				events: 'http://172.16.1.85:3000/events'
+			});
+		});
+	</script>
+</head>
+<body>
+	
+	{<calendar}
+
+	<div id="content" class="span10">
+		<ul class="breadcrumb">
+			<li>
+				<i class="icon-home"></i>
+				<a href="/"> Home</a> 
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-calendar"></i>
+				<a href="#"> Set Schedule</a>
+				<i class="icon-angle-right"></i>
+			</li>
+		</ul>
+	<div class="box span11">
+		<div class="box-header" data-original-title="">
+			<h2><i class="halflings-icon calendar"></i><span class="break"></span>Calendar</h2>
+		</div>
+	  	<div class="box-content">
+			<div id="external-events" class="span3 hidden-phone hidden-tablet"></div>
+			<div id='calend'></div>	
+			<div class="clearfix"></div>
+		</div>
+	</div>
+
+	<div class="box span6">
+		<div class="box-header" style="margin-bottom:10px" data-original-title>
+			<h2><i class="halflings-icon search"></i><span class="break"></span>Set Schedule</h2>
+		</div>
+		<div class="box-content">
+			<form method="post" action="/setSchedule" class="form-horizontal" onsubmit="return validate()">
+				<fieldset>
+				  	<div class="control-group">
+						<label class="control-label" for="process">Process</label>
+						<div class="controls">
+						  	<select name="title" id="process" data-rel="chosen" onchange="update_box()">
+								<option value="Inventory">Inventory</option>
+								<option value="Disposal">Disposal</option>
+						  	</select>
+						</div>
+					</div>
+					<script type="text/javascript">
+						function update_box() {
+							if(document.getElementById("process").value == "Disposal")
+								document.getElementById("assignment_box").hidden = true;
+							if(document.getElementById("process").value == "Inventory")
+								document.getElementById("assignment_box").hidden = false;
+						}
+					</script>
+					<div class="control-group">
+				 		<label class="control-label" for="start">Start</label>
+						<div class="controls" id="ReportDate">
+			                 <div id="start">
+			                  	<input id="date1" name="date1" accesskey="r" class="form-control datepicker" placeholder="Select Date" ng-required="true" ng-model="SelectedReportDate" type="text" required="required" data-ng-animate="2">
+			                 </div>
+			                 <span class="input-group-addon text-pointer">
+			                  	<span class="glyphicon glyphicon-calendar"></span>
+			                 </span>
+		                </div>
+					</div>
+
+					<div class="control-group">
+				 		<label class="control-label" for="end">End</label>
+						<div class="controls" id="ReportDate">
+			                 <div id="end">
+			                  	<input id="date2" name="date2" accesskey="r" class="form-control datepicker" placeholder="Select Date" ng-required="true" ng-model="SelectedReportDate" type="text" required="required" data-ng-animate="2">
+			                 </div>
+			                 <span class="input-group-addon text-pointer">
+			                  	<span class="glyphicon glyphicon-calendar"></span>
+			                 </span>
+		                </div>
+					</div>
+
+					<div class="box-content" id = "assignment_box">
+						<table class="table table-striped table-bordered bootstrap-datatable">
+						  <thead>
+							  <tr>
+								  <th>Assignments of SPMO Staff During Inventory</th>
+							  </tr>
+						  </thead>   
+						  <tbody>{#office}
+								<tr>
+									<td>{office_name}</td>
+									<input type="hidden" name ="off" value="{office_name}">
+									<td><select name="office{office_id}" data-rel="chosen">
+										<option value="" disabled selected>Choose Staff</option>
+										{#spmo_staff}
+										<option value="{staff_id}">{first_name} {middle_init} {last_name}</option>
+										{/spmo_staff}
+									</select></td>
+
+								</tr>
+								{/office}
+							</tbody>
+						</table>
+					</div>
+
+					<input type="submit" class="btn btn-meduim btn-info" value="Save Changes" style="margin-left: 320px;" />
+				</fieldset>
+			</form>
+		</div>
+
+
+
+	</div>
+
+	<div class="box span5" style="float:right; margin-right:50px;" onTablet="span12" onDesktop="span4">
+			<div class="box-header">
+				<h2><i class="halflings-icon check"></i><span class="break"></span>Schedule Records</h2>
+			</div>
+			{#sched_disp}
+			<div class="box-content">
+				<div class="todo" id="todolist">
+					<ul class="todo-list">
+						<form class="form-horizontal" method="post" action="/deleteEvent">
+						<li> {title} > {start_month}/{start_day}/{start_year} - {end_month}/{end_day}/{end_year} 
+							<span class="label label-important"  style="float:left;">{event_status}</span>
+							<input type="hidden" name="id" value="{id}"></input><br>
+							<input type="submit" class="btn btn-small btn-info" value="Remove">
+						</li>
+						</form>
+					</ul>
+				</div>	
+			</div>
+			{/sched_disp}
+		</div>
+	</div>
+	</div>
+	{/calendar}
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>                  
+</head>
+
+<body>
+	
+	
+	{<transactionlog}
+	<!-- start: Content -->
+
+	<div id="content" class="span10">
+		
+		<ul class="breadcrumb">
+			<li>
+				<i class="icon-home"></i>
+				<a href="/"> Home</a> 
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-briefcase"></i>
+				<a href="/transactionlog">Transaction log</a>
+				<i class="icon-angle-right"></i>
+			</li>
+		</ul>
+
+		<div class="row-fluid">		
+		<div class="box span12">
+			<div class="box-header" data-original-title>
+				<h2><i class="halflings-icon user"></i><span class="break"></span>Transaction Log</h2>
+			</div>
+			<div class="box-content">
+				<table class="table table-striped table-bordered bootstrap-datatable datatable">
+					<thead>
+					  <tr>
+						  <th>Transaction No.</th>
+						  <th>User</th>
+						  <th>Transaction Date</th>
+						  <th>Transaction Time</th>
+						  <th>Transaction Details</th>
+					  </tr>
+					</thead>   
+					<tbody>
+					{#transaction}
+					<tr> 
+						<td>{transaction_no}</td>
+						<td>{staff_id}</td>
+						<td>{transaction_date}</td>
+						<td>{transaction_time}</td>
+						<td>{transaction_details}</td>	
+					</tr>
+					{/transaction}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		</div>
+	</div>
+
+	{/transactionlog}
+
+</body>
+</html>

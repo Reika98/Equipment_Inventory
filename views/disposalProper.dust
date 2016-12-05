@@ -1,0 +1,119 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="shortcut icon" href="img/favicon.ico">
+</head>
+
+<body>
+
+	{<editbatchproper}
+			<!-- start: Content -->
+	<div id="content" class="span10">
+	<ul class="breadcrumb">
+		<li>
+			<i class="icon-home"></i>
+			<a href="/"> Home</a> 
+			<i class="icon-angle-right"></i>
+		</li>
+		<li>
+			<i class="icon-folder-open"></i>
+			<a href="#"> Manage Equipment</a>
+			<i class="icon-angle-right"></i>
+		</li>
+		<li>
+			<i class="icon-edit"></i>
+			<a href="#"> Dispose Equipment</a>
+		</li>
+	</ul>
+
+	<div class="row-fluid sortable">
+	<div class="box span12">
+		<div class="box-header" data-original-title>
+			<h2><i class="halflings-icon edit"></i><span class="break"></span> Equipment Disposal Details </h2>
+		</div>
+	<div class="box-content">
+		<form class="form-horizontal" method="post" action="disposeBatch" onsubmit = "return validateForm()">
+			<fieldset>
+				<input type="hidden" id="type_holder" name = "propno" value="{propno}" />
+					
+				<div class="control-group">
+					<label class="control-label" for="propno">Property Number</label>
+					<div class="controls">
+					 	<input class="input-xlarge focused" name="propno" type="number"  value="{propno}" disabled>
+					</div>
+			  	</div>
+			  	<div class="control-group">
+					<label class="control-label" for="component_nos">Select Equipment Components</label>
+					<div class="controls">
+					  	<select class="input-xlarge focused" name="component_nos" multiple data-rel="chosen">
+							{#comno}
+								<option value="{component_no}">{propno}-{component_no}</option>
+							{/comno}
+					  	</select>
+					</div>
+				</div>
+			  	<div class="control-group">
+		        	<label class="control-label" for="appraised_value">Appraised Value</label>
+		        	<div class="controls">
+		        		<input class="input-xlarge focused" type="number" name="appraised_value" id="appraised" required></input>
+		        	</div>
+		        </div>
+
+		        <div class="control-group">
+			        <label class="control-label" for="way_of_disposal">Way Of Disposal</label>
+			        <div class="controls">
+				        <select class="input-xlarge focused" id="way_of_disposal" name="way_of_disposal" data-rel="chosen" onchange="undisableORBtn()">
+				          	<option value="" disabled selected>Choose Way of Disposal</option>
+				          	<option value="Sale">Sale</option>
+				            <option value="Transfer">Transfer</option>
+				            <option value="Destruction">Destruction</option>
+				        </select>
+				    </div>
+			    </div>
+
+		        <div class="control-group">
+		        	<label class="control-label" for="or_no">O.R. Number</label>
+		        	<div class="controls">
+		        		<input class="input-xlarge focused" type="number" name="or_no" id="or_no" ></input>
+		        	</div>
+		        </div>
+
+			    <div class="control-group">
+		        	<label class="control-label" for="amount">Amount</label>
+		        	<div class="controls">
+		        		<input class="input-xlarge focused" type="number" name="amount" id="amount" ></input>
+		        	</div>
+		        </div>
+
+		        <script type="text/javascript">
+			    	function undisableORBtn() {
+				    	document.getElementById("or_no").disabled = true;
+				    	document.getElementById("amount").disabled = true;
+				    	var x = document.getElementById("way_of_disposal").selectedIndex;
+				    	var y = document.getElementById("way_of_disposal").options;
+				    	if(y[x].value == "Sale"){
+					   		document.getElementById("or_no").disabled = false;
+					   		document.getElementById("amount").disabled = false;
+					   	}
+					}
+					undisableORBtn();
+			    </script>
+
+				<div class="control-group">
+					<div class="controls">
+						<button type="submit" class="btn btn-meduim btn-info" style ="margin-left: 200px"><i class = "icon-ok"></i> Edit Equipment</button>
+					</div>
+				</div>
+			</fieldset>
+		</form>
+	</div>
+	</div>
+	</div>
+	</div>
+	{/editbatchproper}
+
+</body>
+</html>
+

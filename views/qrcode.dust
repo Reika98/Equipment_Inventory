@@ -1,0 +1,98 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+	<title>basic example</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+	<script>
+		jQuery(function(){
+			{#equip}
+			var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+			var name = months['{month}'-1];
+			var dash = "-";
+			if('{component_no}' == 0){
+				dash = " ";
+			}
+
+			jQuery('#qrcode').qrcode({width:130, height:130,text: '{qrcode}'});
+
+			var a = '{office_name}';
+			var b = a.split(" ");
+			console.log(b);
+			
+			var canvas2 = document.querySelector("#qrcode canvas");
+		 	var imag3 = canvas2.toDataURL("image/png");
+		 	console.log(imag3);
+
+   			var canvas = document.getElementById("canvas");
+			var context = canvas.getContext('2d');
+			console.log(context);  
+			var img1 = new Image();
+			var img2 = new Image();
+			img1.src = 'img/sticker.jpg';
+			img1.onload = function() {
+			    canvas.width = img1.width;
+			    canvas.height = img1.height;
+			    img2.src = imag3;
+			};
+			img2.onload = function() {
+			    context.globalAlpha = 1.0;
+			    context.drawImage(img1, 0, 0);
+			    context.globalAlpha = 1.0;
+			    context.drawImage(img2, 71, 203);
+			    context.font = 'bold 20px Arial';
+			    context.fillStyle = 'rgba(0, 0, 0, 1)';
+			    context.fillText('{property_no}'+dash+'{component_no}', 392, 206);
+			    context.fillText('{article_name}', 332, 231);
+			    context.fillText('{unit_cost}', 428, 255);
+			    context.fillText(name+' {day}, {year}', 404, 279);
+			    context.fillText('{short_office_name}', 352, 304);
+			};
+		 	     
+			$(download).on('click', function() {
+				var imgURL = canvas.toDataURL("image/png");
+			    var dl = document.createElement('a');
+			    dl.setAttribute('href', imgURL);
+			    dl.setAttribute('download', '{property_no}-{component_no}'+' Sticker.png');
+				dl.click();
+			}); 
+
+			{/equip} 
+		});
+	</script>
+</head>
+
+<body>
+	{<qrcode}
+	<div id="content" class="span10">
+		<ul class="breadcrumb">
+			<li>
+				<i class="icon-home"></i>
+				<a href="/"> Home</a> 
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-briefcase"></i>
+				<a href="/viewoffices"> View Office</a>
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-edit"></i>
+				<a href="#"> View Equipment</a>
+			</li>
+		</ul>
+
+		<div class="box">
+		<canvas id="qrcode" width=0, height=0></canvas>
+		<canvas id="canvas"></canvas>
+		<button id="download" class="btn btn-small btn-info">Download Sticker</button>
+		</div>
+	</div>
+	{/qrcode}
+</body>
+
+</html>

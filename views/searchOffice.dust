@@ -1,0 +1,96 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+
+<body>
+
+	{<searchoffice}
+		<!-- start: Content -->
+
+	<div id="content" class="span10">
+		
+		<ul class="breadcrumb">
+			<li>
+				<i class="icon-home"></i>
+				<a href="/"> Home</a> 
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-briefcase"></i>
+				<a href="/viewoffices"> View Office</a>
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-search"></i>
+				<a href="/searchOffice"> Search Office</a>
+				<i class="icon-angle-right"></i>
+			</li>
+		</ul>
+
+	<div class="box span11">
+	<div class="box-header" data-original-title>
+		<h2><i class="halflings-icon briefcase"></i><span class="break"></span>Offices</h2>
+	</div>
+	<div class="box-content">
+		<table class="table table-striped table-bordered bootstrap-datatable">
+		  	<form class="form-horizontal" method="post" action="searchoffices">
+			  	<thead>
+				 	<tr>
+						<th>Office Search</th>
+				  	</tr>
+			  	</thead>   
+			  	<tbody>
+				  	<tr>
+				  		<td>Search By Office ID</td>
+				  		<td>Search By Office Name</td>
+				  	</tr>
+				  	<tr>
+				  		<td class="center"><input class="input-xlarge focused" name="office_id" type="number" id="office_id" value = "{office_id}" onchange="disables()"></td>
+				  		<td class="center"><input type="text" name="office_name" class="input-xlarge focused" id="office_name" data-provide="typeahead" data-items="4" data-source='[{#office}"{office_name}"{@idx}"{office_name}"{/idx}{@sep}, {/sep}{/office}]' value="{office_name}" onchange="disables()"></td>
+				  	</tr>
+
+				  	<script type="text/javascript">
+				  		function disables(){
+				  			var office_id = document.getElementById("office_id");
+				  			var office_name = document.getElementById("office_name");
+				  			if(office_id.value.trim() == "" && office_name.value.trim() == ""){
+				  				office_id.disabled = false;
+				  				office_name.disabled = false;
+				  			}
+				  			else if(office_id.value.trim() == ""){
+				  				office_id.disabled = true;
+				  			}
+				  			else if(office_name.value.trim() == ""){
+				  				office_name.disabled = true;
+				  			}
+				  		}
+				  		disables();
+				  	</script>
+				  	<!-- <script>
+						function checker(){
+							$('#date2').prop('disabled', false);
+							var input = $('#date1').val();
+							if()
+						}
+					</script> -->
+			  	</tbody>
+			  	<tfoot>
+			  		<tr>
+			  			<td colspan = "2"><a href="/viewoffices"><button class="btn btn-small"><i class="halflings-icon white remove"></i> Cancel</button></a>
+			  			<input type="submit" class="btn btn-small btn-info" value="Search Office" style="margin-left: 3px"></td>
+			  			<p style="color:red;">{error}</p>
+			  		</tr>
+			  	</tfoot>
+			</form>
+		</table>
+	</div>
+	</div>
+	</div>
+
+	{/searchoffice}	
+
+</body>
+</html>

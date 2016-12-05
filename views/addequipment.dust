@@ -1,0 +1,161 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script type="text/javascript">
+		function validateForm() {
+			var x = document.getElementById("error").innerHTML;
+			if (x === "Office and Staff doesnt match!") {
+				alert("Staff and Office doesnt match!");
+				return false;
+			}
+		}
+	</script>
+</head>
+
+<body>
+
+	{<add}
+			<!-- start: Content -->
+	<div id="content" class="span10">
+		<ul class="breadcrumb">
+			<li>
+				<i class="icon-home"></i>
+				<a href="/"> Home</a> 
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-folder-open"></i>
+				<a href="#"> Manage Equipment</a>
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-plus"></i>
+				<a href="/addequipment"> Add Equipment</a>
+			</li>
+		</ul>
+
+
+		<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon plus-sign"></i><span class="break"></span>Add Equipment</h2>
+					</div>
+		<div class="box-content">
+			<form class="form-horizontal" method="post" action="confirmadd" onsubmit = "return validateForm()">
+				<fieldset>
+					<div class="control-group">
+						<label class="control-label" for="article_name">Article Name</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="article_name" type="text" required>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="prop_number">Property Number</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="property_no" type="number" length="4" required>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="comp_number">Quantity</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="quantity" type="number">
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="description">Description</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="description" type="text" required>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="cost">Unit Cost</label>
+						<div class="controls">
+						  	<div class="input-prepend input-append">
+							<span class="add-on">Php</span><input id="cost" size="16" type="number" name="unit_cost" required><span class="add-on">.00</span>
+						  	</div>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="date01">Date Acquired</label>
+					  	<div class="controls">
+							<input type="text" class="input-xlarge datepicker" name="date_acquired" required>
+					  	</div>
+					</div>
+					<div class="control-group">
+				        <label class="control-label" for="selectError1">Office Assigned</label>
+				        <div class="controls">
+					        <select id="selectError1" name="office_id" data-rel="chosen" onchange="changeValueStaffOffice()">
+					          <option value="" disabled selected>Choose Office</option>
+					          {#office}
+					            <option value="{office_id}">{office_name}</option>
+					          {/office}
+					        </select>
+					    </div>
+				    </div>
+
+				  	<div class="control group">
+				        <label class="control-label" for="selectError2">ARE for</label>
+				        <div class="controls">
+				        <select id="selectError2" name="staffs" data-rel="chosen" onchange="changeValueStaffOffice()">
+				          <option value="" disabled selected>Choose Staff</option>
+				          {#staff}
+				            <option value="{staff_id}" id = "{office_id}">{first_name} {middle_init} {last_name}</option>
+				          {/staff}
+				        </select>
+				      </div>
+				    </div>
+				    <div class="control-group">
+				    	<div class="controls">
+				    		<p id="error"></p>
+				    	</div>
+				    </div>
+
+				    <script type="text/javascript">
+				    	function changeValueStaffOffice() {
+					    	var x = document.getElementById("selectError2").selectedIndex;
+							var y = document.getElementById("selectError2").options;
+							var x1 = document.getElementById("selectError1").selectedIndex;
+							var y1 = document.getElementById("selectError1").options;
+					    	if(y[x].id != y1[x1].value){
+					    		document.getElementById("error").innerHTML = "Office and Staff doesnt match!";
+					    	} else {
+					    		document.getElementById("error").innerHTML = " ";
+					    	}
+					    }
+				    </script>
+
+				    <div class="control-group">
+						<label class="control-label" for="selectError">Type</label>
+						<div class="controls">
+						  <select id="selectError" name="type" data-rel="chosen">
+							<option>IT Equipments</option>
+							<option>Non-IT Equipment</option>
+							<option>Furnitures and Fixtures</option>
+							<option>Aircons</option>
+							<option>Lab Equipment</option>
+						  </select>
+						</div>
+				  	</div>
+
+				  	<div class="control-group">
+						<label class="control-label" for="fileInput">File input</label>
+						<div class="controls">
+							<input class="input-xlarge focused" class="input-file " id="upload-input" type="file" name="uploads">
+						</div>
+					</div>
+
+				  	<br>
+					<button type="submit" class="btn btn-medium btn-info submits" style ="margin-left: 200px" id = "submits" >Add Equipment</button>
+					<button class="btn btn-medium" style="margin-left:10px;" ><a href="/">Cancel</a></button>
+				</fieldset>
+			</form>
+		</div>
+		</div>
+	</div>
+	</div>
+	{/add}
+	
+</body>
+</html>

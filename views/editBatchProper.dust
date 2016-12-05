@@ -1,0 +1,123 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="shortcut icon" href="img/favicon.ico">
+</head>
+
+<body>
+
+	{<editbatchproper}
+			<!-- start: Content -->
+	<div id="content" class="span10">
+	<ul class="breadcrumb">
+		<li>
+			<i class="icon-home"></i>
+			<a href="/"> Home</a> 
+			<i class="icon-angle-right"></i>
+		</li>
+		<li>
+			<i class="icon-folder-open"></i>
+			<a href="#"> Manage Equipment</a>
+			<i class="icon-angle-right"></i>
+		</li>
+		<li>
+			<i class="icon-edit"></i>
+			<a href="/searchforbatcheditequipment">Batch Edit Equipment</a>
+		</li>
+	</ul>
+
+	{#equipment}
+	<div class="row-fluid sortable">
+	<div class="box span12">
+		<div class="box-header" data-original-title>
+			<h2><i class="halflings-icon edit"></i><span class="break"></span>Batch Edit Equipment Info</h2>
+		</div>
+	<div class="box-content">
+		<form class="form-horizontal" method="post" action="editBatch" onsubmit = "return validateForm()">
+			<fieldset>
+					<input type="hidden" id="type_holder" name = "typ" value="{type}" />
+					<input type="hidden" id="type_holder" name = "propno" value="{property_no}" />
+					<input type="hidden" id="type_holder" name = "comnum" value="{comno}" />
+					
+					<div class="control-group">
+						<label class="control-label" for="propno">Property Number</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="propno" type="number"  value="{property_no}" disabled>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="comno">Component Number</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="comno" type="text" value="{component_no}" disabled>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="artname">Article Name</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="artname" type="text" value="{article_name}" required>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="description">Description</label>
+						<div class="controls">
+						 	<textarea class="input-xlarge focused" name="description" required>{description}</textarea>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="cost">Unit Cost</label>
+						<div class="controls">
+						  	<div class="input-prepend input-append">
+							<span class="add-on">Php</span><input id="cost" size="16" type="number" name="cost" value="{unit_cost}" required><span class="add-on">.00</span>
+						  	</div>
+						</div>
+				  	</div>
+				  	<div class="control-group">
+						<label class="control-label" for="date">Acquisition Date</label>
+						<div class="controls">
+						 	<input class="input-xlarge focused" name="date" type="date" value="{year}-{month}-{day}" required>
+						</div>
+				  	</div>
+
+				  	<div class="control-group">
+						<label class="control-label" for="selectError">Type</label>
+						<div class="controls">
+						  <select class="input-xlarge focused" id="selectError" name="type" data-rel="chosen">
+							<option>IT Equipments</option>
+							<option>Non-IT Equipment</option>
+							<option>Furnitures and Fixtures</option>
+							<option>Aircons</option>
+							<option>Lab Equipment</option>
+						  </select>
+						</div>
+				  	</div>
+				  	<script type="text/javascript">
+				    	var val = document.getElementById('type_holder').value;
+					    var sel = document.getElementById('selectError');
+					    var opts = sel.options;
+					    for(var opt, j = 0; opt = opts[j]; j++) {
+					        if(opt.value == val) {
+					            sel.selectedIndex = j;
+					            break;
+					        }
+					    }
+				    </script>
+
+				<div class="control-group">
+					<div class="controls">
+						<button type="submit" class="btn btn-meduim btn-info" style ="margin-left: 200px"><i class = "icon-ok"></i> Edit Equipment</button>
+					</div>
+				</div>
+			</fieldset>
+		</form>
+	</div>
+	</div>
+	</div>
+	{/equipment}
+	</div>
+	{/editbatchproper}
+
+</body>
+</html>
+

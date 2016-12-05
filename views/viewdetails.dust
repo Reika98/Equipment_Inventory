@@ -1,0 +1,347 @@
+{>"header"/}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script>
+		jQuery(function(){
+			{#equipment}
+			var canvas = document.getElementById("canvas");
+			var context = canvas.getContext('2d');
+			var equip_img = new Image();
+			equip_img.src = 'equipment_images/{image_file}';
+			canvas.width = 500;
+			canvas.height = 500;
+			
+			equip_img.onload = function() {
+				var hRatio = canvas.width / equip_img.width    ;
+				var vRatio = canvas.height / equip_img.height  ;
+				var ratio  = Math.min ( hRatio, vRatio );
+				var centerShift_x = ( canvas.width - equip_img.width*ratio ) / 2;
+	   			var centerShift_y = ( canvas.height - equip_img.height*ratio ) / 2;
+				    context.drawImage(equip_img, 0,0, equip_img.width, equip_img.height, centerShift_x, centerShift_y, equip_img.width*ratio, equip_img.height*ratio);
+			    
+			};
+			{/equipment}
+		});
+
+	</script>
+	<script type="text/javascript">
+		function validateForm() {
+			var x = document.getElementById("way_of_disposal").value;
+			if (x === "") {
+				alert("Please provide an Appraised Value.");
+				return false;
+			}
+		}
+	</script>
+</head>
+
+<body>
+
+	{<viewdetails}
+	<!-- start: Content -->
+	<div id="content" class="span10">
+	
+		<ul class="breadcrumb">
+			<li>
+				<i class="icon-home"></i>
+				<a href="/"> Home</a> 
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-briefcase"></i>
+				<a href="/viewoffices"> View Office</a>
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-edit"></i>
+				<a href="/viewequipments"> View Equipment</a>
+				<i class="icon-angle-right"></i>
+			</li>
+			<li>
+				<i class="icon-edit"></i>
+				<a href="#"> View Details</a>
+			</li>
+
+		</ul>
+			{#equipment}
+			<div class="row-fluid sortable">
+				<div class="box span12">
+					<div class="box-header" data-original-title>
+						<h2><i class="halflings-icon list-alt"></i><span class="break"></span>Equipment Info</h2>
+					</div>
+			<div class="box-content">
+				<form class="form-horizontal" method="post">
+					<fieldset>
+						<input type="hidden" id="office_holder" name = "off" value="{office_id}" />
+						<input type="hidden" id="staff_holder" name = "sta" value="{staff_id}" />
+						<input type="hidden" id="type_holder" name = "typ" value="{type}" />
+						<input type="hidden" id="type_holder" name = "propno" value="{property_no}" />
+						<input type="hidden" id="type_holder" name = "comnum" value="{comno}" />
+						<input type="hidden" id="something" value="{hidden}" />
+						<div class="control-group">
+							<center><canvas id="canvas"></canvas></center>
+						</div>
+						
+						<div class="control-group">
+							<label class="control-label" for="propno">Property Number</label>
+							<div class="controls">
+							 	<input class="input-xlarge focused" type="number"  value="{property_no}" disabled>
+							</div>
+					  	</div>
+					  	<div class="control-group">
+							<label class="control-label" for="comno">Component Number</label>
+							<div class="controls">
+							 	<input class="input-xlarge focused" type="text" value="{component_no}" disabled>
+							</div>
+					  	</div>
+					  	<div class="control-group">
+							<label class="control-label" for="artname">Article Name</label>
+							<div class="controls">
+							 	<input class="input-xlarge focused" type="text" value="{article_name}" disabled>
+							</div>
+					  	</div>
+					  	<div class="control-group">
+							<label class="control-label" for="description">Description</label>
+							<div class="controls">
+							 	<textarea class="input-xlarge focused" disabled>{description}</textarea>
+							</div>
+					  	</div>
+					  	<div class="control-group">
+							<label class="control-label" for="cost">Unit Cost</label>
+							<div class="controls">
+							 	<input class="input-xlarge focused" type="number" value="{unit_cost}" disabled>
+							</div>
+					  	</div>
+					  	<div class="control-group">
+							<label class="control-label" for="date">Acquisition Date</label>
+							<div class="controls">
+							 	<input class="input-xlarge focused" type="text" value="{year}-{month}-{day}" disabled>
+							</div>
+					  	</div>
+					  	<div class="control-group">
+							<label class="control-label" for="date">Type</label>
+							<div class="controls">
+							 	<input class="input-xlarge focused" type="text" value="{type}" disabled>
+							</div>
+					  	</div>
+					</fieldset>
+				</form>
+				<div class="control-group">
+					<div class="controls">
+						<form class="form-horizontal" method="post" action="searchBatchEdit">
+							<input type="hidden" name="propno" value="{property_no}"></input>
+							<input type="hidden" name="comno" value="{component_no}"></input>
+							<button type="submit" class="btn btn-meduim btn-info" id="optional" style ="margin-left: 300px"><i class="icon-edit"></i>Edit Equipment Info</button>
+						</form>
+					</div>
+			  	</div>
+
+			  	<script type="text/javascript">
+			  		var x = document.getElementById("something").value;
+			  		if (x == "false")
+			  			document.getElementById("optional").style.visibility = "hidden";
+			  	</script>
+
+			  	<div class="control-group">
+					<div class="controls">
+						<button class="btn btn-default edit-equipment"
+					  		data-toggle="modal" 
+					  		data-target="#editFormModal"
+					  		data-property_no="{property_no}"
+					  		data-component_no="{component_no}"
+					  		data-article_name="{article_name}"
+					  		data-description="{description}"
+					  		data-date_acquired="{year}-{month}-{day}"
+					  		data-unit_cost="{unit_cost}"
+					  		data-status="{condition}"
+					  		id = "editer">
+					  		<i class="icon-pencil"></i> Edit Equipment Status
+					    </button>
+
+					    <button class="btn btn-default move-equipment"
+					  		data-toggle="modal" 
+					  		data-target="#moveFormModal"
+					  		data-property_no="{property_no}"
+					  		data-component_no="{component_no}"
+					  		data-article_name="{article_name}"
+					  		data-description="{description}"
+					  		data-date_acquired="{year}-{month}-{day}"
+					  		data-unit_cost="{unit_cost}"
+					  		data-status="{condition}"
+					  		id = "mover">
+					  		<i class="icon-trash"></i> Move to Disposed
+					    </button>
+
+					    <script type="text/javascript">
+					  		var x = document.getElementById("something").value;
+					  		if (x != "false") {
+					  			document.getElementById("editer").style.visibility = "hidden";
+					  			document.getElementById("mover").style.visibility = "hidden";
+					  		}
+					  	</script>
+
+					    <script type="text/javascript">
+					    	function undisableBtn() {
+						    	document.getElementById("mover").disabled = true;
+						    	document.getElementById("editer").disabled = true;
+						    	if("{condition}" == "Working"){
+							   		document.getElementById("mover").disabled = false;
+							   		document.getElementById("editer").disabled = false;
+							   	}
+							}
+							undisableBtn();
+					    </script>
+					    
+
+					   <button class="btn btn-danger delete-equipment" 
+					  		data-property_no="{property_no}"
+					  		data-component_no="{component_no}"
+					  		id = "delte">
+					  		<i class="icon-remove"></i> Delete Equipment
+					    </button><br><br>
+
+					    <script type="text/javascript">
+					  		var x = document.getElementById("something").value;
+					  		if (x != "false") {
+					  			document.getElementById("delte").style.visibility = "hidden";
+					  		}
+					  	</script>
+					</div>
+				</div>
+			</div>
+			{/equipment}
+		</div>
+		</div>
+	</div>
+	{/viewdetails}
+
+<div class="modal fade" id="editFormModal" tabindex="-1" role="dialog" aria-labelledby="editFormModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    	<form method ="post" action="/editStatus">
+    		<input type="hidden" id="edit-form-property_no" name = "property_no" />
+		    <input type="hidden" id="edit-form-component_no" name = "component_no" />
+
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		        	<span aria-hidden="true">&times;</span>
+		        </button>
+		        <h5 class="modal-title" id="myModalLabel">Edit Equipment Status</h5>
+		      </div>
+
+		      <div class="modal-body">
+
+		        <div class="form-group">
+		        	<label>Article Name</label>
+		        	<input class="input-xlarge focused" type="text" class="form-control" name="article_name" id="edit-form-article_name" ></input>
+		        </div>
+
+		        <div class="form-group">
+			        <label class="control-label" for="status">Way Of Disposal</label>
+			        <div class="controls">
+				        <select class="input-xlarge focused" id="status" name="status" data-rel="chosen">
+				          	<option value="" disabled selected>Choose Status</option>
+				          	<option value="Found">Found</option>
+				            <option value="Not Found">Not Found</option>
+				        </select>
+				    </div>
+			    </div>
+			    </div>
+
+				<div class="modal-footer">
+		        	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		        	<input type="submit" class="btn btn-primary" value="Save"/>
+		    	</div>
+     		</form>
+    	</div>
+  	</div>
+</div>
+
+
+<div class="modal fade" id="moveFormModal" tabindex="-1" role="dialog" aria-labelledby="moveFormModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    	<form method ="post" action="/move" onsubmit="return validateForm()">
+		      <input type="hidden" id="move-form-property_no" name = "property_no" />
+		      <input type="hidden" id="move-form-component_no" name = "component_no" />
+
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		        	<span aria-hidden="true">&times;</span>
+		        </button>
+		        <h5 class="modal-title" id="myModalLabel2">Alter Equipment Condition</h5>
+		      </div>
+
+		      <div class="modal-body">
+
+		        <div class="form-group">
+		        	<label>Article Name</label>
+		        	<input class="input-xlarge focused" type="text" class="form-control" name="article_name" id="move-form-article_name" disabled></input>
+		        </div>
+
+		        <div class="form-group">
+		        	<label>Property No.</label>
+		        	<input class="input-xlarge focused" type="text" class="form-control" name="property_no" id="move-form-property_no1" disabled></input>
+		        </div>
+
+		        <div class="form-group">
+		        	<label>Component No.</label>
+		        	<input class="input-xlarge focused" type="text" class="form-control" name="component_no" id="move-form-component_no1" disabled></input>
+		        </div>
+
+		        <div class="form-group">
+		        	<label>Appraised Value</label>
+		        	<input class="input-xlarge focused" type="number" class="form-control" name="appraised_value" id="appraised" required></input>
+		        </div>
+
+		        <div class="form-group">
+			        <label class="control-label" for="way_of_disposal">Way Of Disposal</label>
+			        <div class="controls">
+				        <select class="input-xlarge focused" id="way_of_disposal" name="way_of_disposal" data-rel="chosen" onchange="undisableORBtn()">
+				          	<option value="" disabled selected>Choose Way of Dispposal</option>
+				          	<option value="Sale">Sale</option>
+				            <option value="Transfer">Transfer</option>
+				            <option value="Destruction">Destruction</option>
+				        </select>
+				    </div>
+			    </div>
+
+		        <div class="form-group">
+		        	<label>O.R. Number</label>
+		        	<input class="input-xlarge focused" type="number" class="form-control" name="or_no" id="or_no" ></input>
+		        </div>
+
+			    <div class="form-group">
+		        	<label>Amount</label>
+		        	<input class="input-xlarge focused" type="number" class="form-control" name="amount" id="amount" ></input>
+		        </div>
+
+		        <script type="text/javascript">
+			    	function undisableORBtn() {
+				    	document.getElementById("or_no").disabled = true;
+				    	document.getElementById("amount").disabled = true;
+				    	var x = document.getElementById("way_of_disposal").selectedIndex;
+				    	var y = document.getElementById("way_of_disposal").options;
+				    	if(y[x].value == "Sale"){
+					   		document.getElementById("or_no").disabled = false;
+					   		document.getElementById("amount").disabled = false;
+					   	}
+					}
+					undisableORBtn();
+			    </script>
+			</div>
+
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		        <input type="submit" class="btn btn-primary" value="Move to Disposed"/>
+		      </div>
+     	</form>
+    </div>
+  </div>
+</div>
+	
+</body>
+</html>
+
