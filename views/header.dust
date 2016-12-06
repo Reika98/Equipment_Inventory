@@ -106,6 +106,7 @@
 				<li><a href="/viewoffices"><i class="icon-briefcase"></i><span class="hidden-tablet"> View Offices</span></a></li>
 				<li><a href="/viewdisposal"><i class="icon-trash"></i><span class="hidden-tablet"> Disposal Requests</span></a></li>
 				<li><a href="/transactionlog"><i class="icon-tasks"></i><span class="hidden-tablet"> Transaction log</span></a></li>
+				<li><a href="/viewAssign"><i class="icon-paper-clip"></i><span class="hidden-tablet"> View Assignments</span></a></li>
 			</ul>
 		</div>
 	</div>
@@ -128,6 +129,7 @@
 		{+transactionlog/}
 		{+equipmentHistory/}
 		{+dItem/}
+		{+viewassign/}
 	</div><!--/#content.span10-->
 	</div><!--/fluid-row-->	
 

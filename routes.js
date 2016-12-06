@@ -35,6 +35,7 @@ router.get('/viewdisposal', db.check_user, db.getDisposalList); // new addition
 router.post('/viewDispItems', db.check_user, db.getDisposalItems); 
 router.post('/deleteEvent', db.check_user, db.delete_event);
 router.get('/searchoffice', db.check_user, db.officeName);
+router.get('/viewAssign', db.check_user, db.getAssignments); // new addition 
 router.post('/searchoffices', db.check_user, db.findOffice);
 router.post('/viewequipment', db.check_user, db.getEquipment);
 router.get('/viewequipment2', db.check_user, db.getEquipment1);									////
@@ -102,6 +103,7 @@ router.get('/m/office-assignments', db.m_getInventoryAssign);
 router.get('/m/checker-default-list/:username', db.m_getListforCheckers);
 router.post('/m/send-disposal-list', db.m_disposalListfromClerks);
 router.get('/m/disposal-list/:username', db.m_getDisposalListforCheckers);
+router.post('/m/send-confirmed-list', db.m_confirmedListfromChecker);
 
 //error-handling
 router.get('*', function(err, req, res, next) {

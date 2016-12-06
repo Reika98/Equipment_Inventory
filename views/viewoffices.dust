@@ -6,10 +6,10 @@
     <script type="text/javascript"> 
         function ConvertToCSV(office_id, office_name, type) {
         	if(type == 'Inventory'){
-        		var url = 'http://172.16.1.85:3000/generate-inventory-report/' + office_id;
+        		var url = 'http://172.16.15.130:3000/generate-inventory-report/' + office_id;
         		var title = 'Article Name,Description,Date Acquired,Property Number,Component Number,Unit Cost\r\n';
         	}else{
-        		var url = 'http://172.16.1.85:3000/generate-disposal-report/' + office_id;
+        		var url = 'http://172.16.15.130:3000/generate-disposal-report/' + office_id;
         		var title = 'Date Acquired,Articles,Property Nubmer,Quantity,Unit Cost,Disposal Type,Appraised Value,OR No.,Amount\r\n';
         	}
         	

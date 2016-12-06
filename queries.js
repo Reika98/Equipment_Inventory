@@ -1,8 +1,6 @@
 var promise = require('bluebird'),
-    pg = require('pg');
+    pg = require('pg'),
     session = require ('express-session'),
-    Pushwoosh = require('pushwoosh-client'),
-    client= new Pushwoosh("C2729-47420", "qlllFCWULrvJ6PdziQAGEK0E7Oo0dtauMF0XjWlnOMv3MZeywUzJYwpKa7Kuj8MbUI3vpAGkk8QhFHYOR2Nl"),
     path = require('path'),
     fs = require('fs'),
     async = require('async'),
@@ -20,23 +18,26 @@ var options = {
 
 var pgp = require('pg-promise')(options);
 //var connectionString = "postgres://inventory:&3c6u4o@127.0.0.1:5432/csu_app_inventory";
-var connectionString = "postgres://postgres:2320664@localhost:5432/upceis";
+var connectionString = "postgres://postgres:1234@localhost:5432/upceisdb";
 var db = pgp(connectionString);
 
 function setMode() {
     db.task( function(t) {
         return t.any('SELECT update_sched()')
             .then(function (data) {
-                return t.one("SELECT title from schedule where event_status='Ongoing'")
+                return t.one("SELECT * from schedule where event_status='Ongoing'")
                         .then(function (event) {
-                            mode = event['title'];
+                            if(event.length <= 0)
+                                mode = 'Default';
+                            else {
+                                mode = event['title'];
                             var date = new Date();
-                            console.log(date + "-" + event['start']);
-                            if(event['title']=='Inventory' && event['start'] == date)
-                                start_inventory();
+                            console.log(date + "-" + event['start'].toString());
+                            }
                         })
                         .catch(function (err) {
                             mode = 'Default';
+                            console.log("[SET-MODE1] " + err);
                         });
             });
         })
@@ -45,7 +46,7 @@ function setMode() {
             console.log("MODE: " + mode);
         })
         .catch(function (err) {
-            console.log("[SET-MODE] " + err);
+            console.log("[SET-MODE2] " + err);
             return next(err);
         });
 }
@@ -1393,7 +1394,7 @@ function addSchedule(req, res, next) {
                 retr.push(t.none(temp_query,  req.body));
                 // var messge = "Good day,\n\nPlease be aware that you are assigned in " + req.body.off[i] + " in the inventory scheduled on " + req.body.date1 + " to " + req.body.date2 + ".";
                 // // if(req.body.)
-                // send_email_inventory(,messge);
+                //send_email_inventory(,messge);
             }
         }
         return t.batch(retr);
@@ -1414,6 +1415,7 @@ function addSchedule(req, res, next) {
 function delete_event(req, res, next) {
     console.log("at delete event");
     db.none("delete from schedule where id = $1", req.body.id)
+    db.none("delete from spmo_staff_assignment where inventory_id = $1", req.body.id)
         .then(function (data) {
           res.redirect('/calendar');
         })
@@ -1477,6 +1479,23 @@ function rend_equipmentHistory(req, res, next) {
     });
 }
 
+function getAssignments(req, res, next) {
+    db.task(function (t) {
+        return t.batch([
+            t.any('SELECT * from spmo_staff_assignment, schedule, office WHERE spmo_assigned = ${user} AND inventory_id = schedule.id AND inventory_office = office.office_id', req.session),
+            t.any("Select category, read from dummy_transaction where time > (now() - interval '24 hours') order by time desc limit 5")
+        ]);
+    })
+    .then(function (data) {
+        res.status(200);
+            res.render('viewassign', {equipment: data[0], user: req.session.user, notification: data[1], noti_qty: data[1].length});
+    })
+    .catch(function(err) {
+        console.log("[GET-ITEMS] " + err);
+        return next(err);
+    });
+}
+
 /////////MOBILE////////////
 function m_login(req, res, next) {
     console.log(req.body);
@@ -1531,11 +1550,11 @@ function m_login(req, res, next) {
             console.log("MOBILE HAS LOGGED IN AS (" + role + ")");
            res.status(200);
             if(role == 'clerk')
-                res.send({feedback: 'success', mode: mode, role: role, office: office_name});
+                res.send({feedback: 'success', mode: mode, role: role, office: office_name, username: req.body.username});
             else if(role == 'SPMO')
-                res.send({feedback: 'success', mode: mode, role: role});
+                res.send({feedback: 'success', mode: mode, role: role, username: req.body.username});
             else
-                res.send({feedback: 'success', mode: mode, role: role, type: type});
+                res.send({feedback: 'success', mode: mode, role: role, type: type, username: req.body.username});
         })
         .catch(function (err) {
             console.log("[MOBILE-LOGIN] " + err);
@@ -1563,12 +1582,12 @@ function m_getListforCheckers(req, res, next) {
         });
 }
 
-//disposal mode
+//disposal mode (checker)
 function m_getDisposalListforCheckers(req, res, next) {
     res.setHeader('Content-Type', 'application/json');
-    db.any("select office_name, content, temp1.type from disposal_requests as temp1 join (select type from checker where username=$1) as temp2 on temp1.type = temp2.type order by article_name", req.params.username)
+    db.any("select office_name, temp1.type, content from disposal_requests as temp1 join (select type from checker where username=$1) as temp2 on temp1.type = temp2.type", req.params.username)
         .then(function (data) {
-            var resultName = '{\n"list_of_equipment":';
+            var resultName = '{\n"disposal_requests":';
             var jsonString = JSON.stringify(data, null, " ");
             var finalString = resultName.concat(jsonString + "\n}");
             //console.log(finalString);
@@ -1581,39 +1600,106 @@ function m_getDisposalListforCheckers(req, res, next) {
             return next(err);
         });
 } 
-//disposal mode
+//disposal mode (clerk)
 function m_disposalListfromClerks(req, res, next) {
     console.log(req.body);
-    var list = req.body;
+    res.setHeader('Content-Type', 'application/json');
+    var email = [];
+    var nullstring = '{"listofEquipmentToDispose":[]}';
+
     db.task( function(t) {
-            return t.batch([
-                t.any("Insert into disposal_requests(username, type, office_name, content) values($1, $2, $3, $4, $5, $6, $7)", 
-                [req.body.username,'Lab Equipment',req.body.officeName, req.body.disposalList_LabEquipment]),
-                t.any("Insert into disposal_requests(username, type, office_name, content) values($1, $2, $3, $4, $5, $6, $7)", 
-                [req.body.username,'IT Equipments',req.body.officeName, req.body.disposalList_ITequipment]),
-                t.any("Insert into disposal_requests(username, type, office_name, content) values($1, $2, $3, $4, $5, $6, $7)", 
-                [req.body.username,'Aircons',req.body.officeName, req.body.disposalList_aircon]),
-                t.any("Insert into disposal_requests(username, type, office_name, content) values($1, $2, $3, $4)", 
-                [req.body.username,'Furniture and Fixtures',req.body.officeName, req.body.disposalList_Furnitures_and_Fixtures]),
-                t.any("Insert into disposal_requests(username, type, office_name, content) values($1, $2, $3, $4)", 
-                [req.body.username,'Non-IT Equipment',req.body.officeName, req.body.disposalList_nonIT])
-            ])
+        var queries = [];
+
+        if(req.body.disposalList_LabEquipment != nullstring) {
+            queries.push(t.any("Insert into disposal_requests(username, type, office_name, content) values($1, $2, $3, $4, $5, $6, $7)", 
+            [req.body.username,'Lab Equipment',req.body.officeName, req.body.disposalList_LabEquipment]));
+        }
+        if(req.body.disposalList_ITequipment != nullstring) {
+            queries.push(t.any("Insert into disposal_requests(username, type, office_name, content) values($1, $2, $3, $4, $5, $6, $7)", 
+            [req.body.username,'IT Equipments',req.body.officeName, req.body.disposalList_ITequipment]));
+        }
+        if(req.body.disposalList_Aircon != nullstring) {
+            queries.push(t.any("Insert into disposal_requests(username, type, office_name, content) values($1, $2, $3, $4, $5, $6, $7)", 
+            [req.body.username,'Aircons',req.body.officeName, req.body.disposalList_Aircon]));
+        }
+        if(req.body.disposalList_Furnitures_and_Fixtures != nullstring) {
+            queries.push(t.any("Insert into disposal_requests(username, type, office_name, content) values($1, $2, $3, $4)", 
+            [req.body.username,'Furnitures and Fixtures',req.body.officeName, req.body.disposalList_Furnitures_and_Fixtures]));
+        }
+        if(req.body.disposalList_NonIT != nullstring) {
+            queries.push(t.any("Insert into disposal_requests(username, type, office_name, content) values($1, $2, $3, $4)", 
+            [req.body.username,'Non-IT Equipment',req.body.officeName, req.body.disposalList_NonIT]));
+        }
+
+        return t.batch(queries)
+                .then(function (qr) {
+                    return t.none("insert into mobile_trans(username, transaction, parameter, result, remarks) values($1,'Disposal Request','','For checking','Success')", [req.body.username]);
+                })
+                .catch(function (err) {
+                    console.log("[M-SEND-DISPOSAL1] " + err);
+                    return t.none("insert into mobile_trans(username, transaction, parameter, result, remarks) values(${username},'Disposal Request','','List not recorded','Failed')", req.body);
+                });
         })
         .then(function (data) {
+            //send email to checkers
+
             console.log("MOBILE HAS SENT DISPOSAL LIST");
             res.status(200)
                 .send({feedback: 'sent'});
         })
         .catch(function (err) {
-            console.log("[M-SEND-DISPOSAL] " + err);
+            console.log("[M-SEND-DISPOSAL2] " + err);
+             res.status(200)
+                .send({feedback: 'not sent'});
             return next(err);
         });
+}
+
+//disposal mode (checker)
+function m_confirmedListfromChecker(req, res, next) {
+    console.log(req.body);
+    res.setHeader('Content-Type', 'application/json');
+    
+    // pg.connect(connectionString,function (err, client, done) {
+    //     var count = req.body.listofEquipmentToDispose.length;
+    //     var list = req.body.listofEquipmentToDispose;
+    //     for(var i = 0; i < count; i++) {
+            
+    //     }
+    // });
+
+    res.status(200)
+        .send({feedback: 'sent'});
+
+}
+
+//disposal mode (spmo)
+function m_confirmedListforSPMO(req, res, next) {
+    console.log(req.body);
+    res.setHeader('Content-Type', 'application/json');
+    
+    // pg.connect(connectionString,function (err, client, done) {
+    //     var count = req.body.listofEquipmentToDispose.length;
+    //     var list = req.body.listofEquipmentToDispose;
+    //     for(var i = 0; i < count; i++) {
+            
+    //     }
+    // });
+
+    res.status(200)
+        .send({feedback: 'sent'});
+
 }
 
 //inventory mode
 function m_getInventoryAssign(req, res, next) {
     console.log("mobile inventory assignment");
     res.setHeader('Content-Type', 'application/json');
+    setMode();
+    if(mode == 'Default') {
+        res.status(200)
+            .send({"inventory_details": []});
+    }
 
     pg.connect(connectionString,function (err, client, done) {
         var finalString;
@@ -1625,9 +1711,9 @@ function m_getInventoryAssign(req, res, next) {
         var rows = [];
         var office = [];
         var jsonString = "";
-        var old;
+
         var jsonString = '{\n"inventory_details":';
-        client.query("select spmo_officer, null as offices from inventory_details group by spmo_officer", function (err, result) {
+        client.query("select spmo_assigned as spmo_officer, null as offices from spmo_staff_assignment group by spmo_assigned", function (err, result) {
             for(var i = 0; i < result.rows.length; i++) {
                 rows.push(result.rows[i]);
             }
@@ -1637,7 +1723,7 @@ function m_getInventoryAssign(req, res, next) {
             var num = 0;
             var q;
             for(var i = 0; i < rows.length; i++) {
-                q = "select office_name from office as temp1 inner join (select office_id from inventory_details where spmo_officer='"+ rows[i]['spmo_officer'] + "') as temp on temp1.office_id = temp.office_id";
+                q = "select office_name from office as temp1 inner join (select inventory_office from spmo_staff_assignment where spmo_assigned='"+ rows[i]['spmo_officer'] + "') as temp on temp1.office_id = temp.inventory_office";
                 queries.push(q);
             }            
             async.forEach(queries, function(q, callback) {
@@ -1720,11 +1806,10 @@ function m_getAllOffices(req, res, next) {
     res.setHeader('Content-Type', 'application/json');
     db.any("SELECT office_name FROM office order by office_name")
         .then(function (data) {
-            console.log(data);
         var resultName = '{\n"offices":';
         var jsonString = JSON.stringify(data, null, " ");
         var finalString = resultName.concat(jsonString + "\n}");
-        console.log(finalString);
+        //console.log(finalString);
         console.log("MOBILE HAS ACCESSED LIST OF OFFICES");
 
         res.status(200)
@@ -1743,7 +1828,7 @@ function m_getOfficeEquipment(req, res, next) {
     var query;
     if(mode == 'Inventory')
         query = 'SELECT * FROM equipment, assigned_to, working_equipment where equipment.qrcode = assigned_to.equipment_qr_code AND equipment.qrcode = working_equipment.qrcode AND assigned_to.office_id_holder = (SELECT office_id from office where office_name = $1) order by article_name';
-    else if(mode == 'Default')
+    else if(mode == 'Default' || mode == 'Disposal')
         query = 'SELECT * FROM equipment, assigned_to where equipment.qrcode = assigned_to.equipment_qr_code AND assigned_to.office_id_holder = (SELECT office_id from office where office_name = $1) order by article_name';
     db.any(query, req.params.office_name)
         .then(function (data) {
@@ -1763,52 +1848,35 @@ function m_getOfficeEquipment(req, res, next) {
 }
 
 //inventory mode (spmo)
-// function m_getOfficeEquipment_Inventory(req, res, next) {
-//     res.setHeader('Content-Type', 'application/json')
-//     db.any("SELECT * FROM equipment, assigned_to, working_equipment where equipment.qrcode = assigned_to.equipment_qr_code AND equipment.qrcode = working_equipment.qrcode AND assigned_to.office_id_holder = (SELECT office_id from office where office_name = $1) order by article_name", req.params.office_name)
-//         .then(function (data) {
-//         var resultName = '{\n"list_of_equipment":';
-//         var jsonString = JSON.stringify(data, null, " ");
-//         var finalString = resultName.concat(jsonString + "\n}");
-//         //console.log(finalString);
-//         console.log("MOBILE HAS ACCESSED LIST OF OFFICES");
-
-//         res.status(200)
-//             .send(finalString);
-//         })
-//         .catch(function (err) {
-//             console.log("[M-OFFICE-EQUIP] " + err);
-//             return next(err);
-//         });
-// }
-
-//inventory mode (spmo)
 //disposal mode (spmo)
 function m_updateEquipment(req, res, next) {
     db.task( function(t) {
-        return t.one("select qrcode from equipment where qrcode=$1", req.body.qrCode)
+        return t.one("select equipment_qr_code from assigned_to as temp1 inner join (select inventory_office from spmo_staff_assignment where spmo_assigned='"+rows[i]['spmo_officer']+"') as temp on temp1.office_id_holder = temp.inventory_office where equipment_qr_code = $1", req.body.qrCode)
             .then(function (qr) {
-                return t.none("update working_equipment set status='Found' where equipment_qrcode=$1", qr.qrcode)
+                return t.none("update working_equipment set status='Found' where qrcode=$1", qr.qrcode)
                     .then(function () {
                         return t.none("insert into mobile_trans(username, transaction, parameter, result, remarks) values(${username},'Update Equipment Status',${qrCode},'Updated','Success')", req.body);
                     })
                     .catch(function (err) {
                         console.log("[M-UPDATE-EQUIP] " + err);
+                        res.send({feedback: 'not found'});
                        return t.none("insert into mobile_trans(username, transaction, parameter, result, remarks) values(${username},'Update Equipment Status',${qrCode},'Not Found','Failed');", req.body);
+                    
                     });
             });
     })
     .then( function() {
-        console.log("FOUND: " + req.params.qr_code);
+        console.log("FOUND: " + req.body.qrCode);
         res.status(200)
             .send({feedback: 'updated'});
     })
     .catch( function(err) {
         console.log("[M-UPDATE-EQUIP] " + err);
-        res.send({feedback: 'not found'});
+        res.send({feedback: 'You have no appointment with this office'});
         return next(err);
     });
 }
+
 
 module.exports = {
     disposePropOffice: disposePropOffice,
@@ -1841,6 +1909,7 @@ module.exports = {
     findOffice: findOffice,
     getEquipment: getEquipment,
     getItems: getItems,
+    getAssignments: getAssignments,
     getItems1: getItems1,
     getDetails: getDetails,
     getDetails1: getDetails1,
@@ -1869,6 +1938,7 @@ module.exports = {
     m_getListforCheckers: m_getListforCheckers,
     m_disposalListfromClerks: m_disposalListfromClerks,
     m_getDisposalListforCheckers: m_getDisposalListforCheckers,
+    m_confirmedListfromChecker: m_confirmedListfromChecker,
     qrcode_gen: qrcode_gen,
     send_email: send_email
 };
