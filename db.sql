@@ -154,11 +154,11 @@ ALTER TYPE statustypes OWNER TO postgres;
 
 CREATE FUNCTION auto_ins_working() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-BEGIN
-   INSERT INTO working_equipment(qrcode, status) values (NEW.qrcode, 'Found');
-   return NEW;
-END
+    AS $$
+BEGIN
+   INSERT INTO working_equipment(qrcode, status) values (NEW.qrcode, 'Found');
+   return NEW;
+END
 $$;
 
 
@@ -170,14 +170,14 @@ ALTER FUNCTION public.auto_ins_working() OWNER TO postgres;
 
 CREATE FUNCTION auto_insert_clerk_roles() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-   BEGIN
-   IF NEW.role = 'Clerk'
-   THEN
-INSERT INTO clerk VALUES (NEW.staff_id, NEW.office_id);
-   END IF;
-   RETURN NEW;
-END
+    AS $$
+   BEGIN
+   IF NEW.role = 'Clerk'
+   THEN
+INSERT INTO clerk VALUES (NEW.staff_id, NEW.office_id);
+   END IF;
+   RETURN NEW;
+END
 $$;
 
 
@@ -189,14 +189,14 @@ ALTER FUNCTION public.auto_insert_clerk_roles() OWNER TO postgres;
 
 CREATE FUNCTION check_insert_assigned_to() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-   BEGIN
-   IF (SELECT office_id from staff where office_id = NEW.office_id_holder and staff_id = NEW.staff_id) is NULL
-   THEN
-	RAISE EXCEPTION 'The staff and office doesnt match!';
-   END IF;
-   RETURN NEW;
-END
+    AS $$
+   BEGIN
+   IF (SELECT office_id from staff where office_id = NEW.office_id_holder and staff_id = NEW.staff_id) is NULL
+   THEN
+	RAISE EXCEPTION 'The staff and office doesnt match!';
+   END IF;
+   RETURN NEW;
+END
 $$;
 
 
@@ -208,14 +208,14 @@ ALTER FUNCTION public.check_insert_assigned_to() OWNER TO postgres;
 
 CREATE FUNCTION check_insert_inventory_details() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-   BEGIN
-   IF ((SELECT title from schedule where id = NEW.inventory_id) != 'Inventory')
-   THEN
-RAISE EXCEPTION 'Schedule specified is not an Inventory';
-   END IF;
-   RETURN NEW;
-END
+    AS $$
+   BEGIN
+   IF ((SELECT title from schedule where id = NEW.inventory_id) != 'Inventory')
+   THEN
+RAISE EXCEPTION 'Schedule specified is not an Inventory';
+   END IF;
+   RETURN NEW;
+END
 $$;
 
 
@@ -227,11 +227,11 @@ ALTER FUNCTION public.check_insert_inventory_details() OWNER TO postgres;
 
 CREATE FUNCTION copy_equip() RETURNS boolean
     LANGUAGE plpgsql
-    AS $$
-  begin
-insert into dummy_inventory(equipment_qrcode) select qrcode from equipment;
-return true;
-  end;
+    AS $$
+  begin
+insert into dummy_inventory(equipment_qrcode) select qrcode from equipment;
+return true;
+  end;
 $$;
 
 
@@ -243,16 +243,16 @@ ALTER FUNCTION public.copy_equip() OWNER TO postgres;
 
 CREATE FUNCTION encryptqr() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-   BEGIN 
-   IF NEW.component_no is NULL
-   THEN
-   	NEW.qrcode := md5(NEW.property_no::text);
-   ELSE 
-	NEW.qrcode := md5((NEW.property_no::text || NEW.component_no::text)::text);
-   END IF;
-   return NEW;
-END
+    AS $$
+   BEGIN 
+   IF NEW.component_no is NULL
+   THEN
+   	NEW.qrcode := md5(NEW.property_no::text);
+   ELSE 
+	NEW.qrcode := md5((NEW.property_no::text || NEW.component_no::text)::text);
+   END IF;
+   return NEW;
+END
 $$;
 
 
@@ -264,15 +264,15 @@ ALTER FUNCTION public.encryptqr() OWNER TO postgres;
 
 CREATE FUNCTION new_assignment() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-BEGIN
-UPDATE equipment_history set end_date = NEW.date_assigned where equip_qrcode=NEW.equipment_qr_code and end_date is null;
-
-INSERT INTO equipment_history (equip_qrcode,start_date,staff_id,office_id) values(NEW.equipment_qr_code,NEW.date_assigned,NEW.staff_id,NEW.office_id_holder);
-
-RETURN NEW;
-
-END
+    AS $$
+BEGIN
+UPDATE equipment_history set end_date = NEW.date_assigned where equip_qrcode=NEW.equipment_qr_code and end_date is null;
+
+INSERT INTO equipment_history (equip_qrcode,start_date,staff_id,office_id) values(NEW.equipment_qr_code,NEW.date_assigned,NEW.staff_id,NEW.office_id_holder);
+
+RETURN NEW;
+
+END
 $$;
 
 
@@ -284,20 +284,20 @@ ALTER FUNCTION public.new_assignment() OWNER TO postgres;
 
 CREATE FUNCTION new_equip_transaction() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-BEGIN
-IF(TG_OP = 'INSERT') THEN
-INSERT INTO transaction_log (staff_id,transaction_details,equip_qrcode) values ('sbmagdadaro','added an equipment',NEW.qrcode);
-RETURN NEW;
-ELSEIF(TG_OP = 'UPDATE') THEN
-INSERT INTO transaction_log (staff_id,transaction_details,equip_qrcode) values ('sbmagdadaro','updated an equipment',NEW.qrcode);
-RETURN NEW;
-ELSEIF(TG_OP = 'DELETE') THEN
-INSERT INTO transaction_log (staff_id,transaction_details) values ('sbmagdadaro','discarded an equipment');
-RETURN NEW;
-END IF;
-RETURN NULL;
-END
+    AS $$
+BEGIN
+IF(TG_OP = 'INSERT') THEN
+INSERT INTO transaction_log (staff_id,transaction_details,equip_qrcode) values ('sbmagdadaro','added an equipment',NEW.qrcode);
+RETURN NEW;
+ELSEIF(TG_OP = 'UPDATE') THEN
+INSERT INTO transaction_log (staff_id,transaction_details,equip_qrcode) values ('sbmagdadaro','updated an equipment',NEW.qrcode);
+RETURN NEW;
+ELSEIF(TG_OP = 'DELETE') THEN
+INSERT INTO transaction_log (staff_id,transaction_details) values ('sbmagdadaro','discarded an equipment');
+RETURN NEW;
+END IF;
+RETURN NULL;
+END
 $$;
 
 
@@ -309,20 +309,20 @@ ALTER FUNCTION public.new_equip_transaction() OWNER TO postgres;
 
 CREATE FUNCTION new_sched_transaction() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
-BEGIN
-IF(TG_OP = 'INSERT') THEN
-INSERT INTO transaction_log (staff_id,transaction_details) values ('sbmagdadaro','created a schedule');
-RETURN NEW;
-ELSEIF(TG_OP = 'UPDATE') THEN
-INSERT INTO transaction_log (staff_id,transaction_details) values ('sbmagdadaro','updated a schedule');
-RETURN NEW;
-ELSEIF(TG_OP = 'DELETE') THEN
-INSERT INTO transaction_log (staff_id,transaction_details) values ('sbmagdadaro','removed a schedule');
-RETURN NEW;
-END IF;
-RETURN NULL;
-END
+    AS $$
+BEGIN
+IF(TG_OP = 'INSERT') THEN
+INSERT INTO transaction_log (staff_id,transaction_details) values ('sbmagdadaro','created a schedule');
+RETURN NEW;
+ELSEIF(TG_OP = 'UPDATE') THEN
+INSERT INTO transaction_log (staff_id,transaction_details) values ('sbmagdadaro','updated a schedule');
+RETURN NEW;
+ELSEIF(TG_OP = 'DELETE') THEN
+INSERT INTO transaction_log (staff_id,transaction_details) values ('sbmagdadaro','removed a schedule');
+RETURN NEW;
+END IF;
+RETURN NULL;
+END
 $$;
 
 
@@ -334,10 +334,10 @@ ALTER FUNCTION public.new_sched_transaction() OWNER TO postgres;
 
 CREATE FUNCTION reset_equip_stat() RETURNS void
     LANGUAGE plpgsql
-    AS $$
- BEGIN
-EXECUTE 'UPDATE working_equipment set status=' || quote_literal('Not Found');
- END
+    AS $$
+ BEGIN
+EXECUTE 'UPDATE working_equipment set status=' || quote_literal('Not Found');
+ END
 $$;
 
 
@@ -349,11 +349,11 @@ ALTER FUNCTION public.reset_equip_stat() OWNER TO postgres;
 
 CREATE FUNCTION update_sched() RETURNS void
     LANGUAGE plpgsql
-    AS $$
- BEGIN
-EXECUTE 'UPDATE schedule SET event_status = ' || quote_literal('Ongoing') || ' WHERE event_status=' || quote_literal('Upcoming') || ' AND now() >= schedule.start AND now() <= schedule.end';
-EXECUTE 'UPDATE schedule SET event_status = ' || quote_literal('Done') || ' WHERE event_status=' || quote_literal('Ongoing') || ' AND now() > schedule.end';
- END
+    AS $$
+ BEGIN
+EXECUTE 'UPDATE schedule SET event_status = ' || quote_literal('Ongoing') || ' WHERE event_status=' || quote_literal('Upcoming') || ' AND now() >= schedule.start AND now() <= schedule.end';
+EXECUTE 'UPDATE schedule SET event_status = ' || quote_literal('Done') || ' WHERE event_status=' || quote_literal('Ongoing') || ' AND now() > schedule.end';
+ END
 $$;
 
 
@@ -365,15 +365,15 @@ ALTER FUNCTION public.update_sched() OWNER TO postgres;
 
 CREATE FUNCTION valid_start() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
- BEGIN
-IF NEW.start <= CURRENT_DATE
-THEN
-RAISE EXCEPTION 'Starting Date should be at least tomorrow.';
-RETURN NULL;
-END IF;
-RETURN NEW;
- END
+    AS $$
+ BEGIN
+IF NEW.start <= CURRENT_DATE
+THEN
+RAISE EXCEPTION 'Starting Date should be at least tomorrow.';
+RETURN NULL;
+END IF;
+RETURN NEW;
+ END
 $$;
 
 
@@ -520,7 +520,8 @@ CREATE TABLE disposal_requests (
     username text NOT NULL,
     type equipmenttypes NOT NULL,
     office_name text,
-    content text
+    content json,
+    transaction text
 );
 
 
@@ -794,6 +795,26 @@ CREATE TABLE schedule (
 ALTER TABLE schedule OWNER TO postgres;
 
 --
+-- Name: sched_dates; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW sched_dates AS
+ SELECT schedule.start,
+    schedule."end",
+    date_part('month'::text, schedule.start) AS month_start,
+    date_part('day'::text, schedule.start) AS day_start,
+    date_part('year'::text, schedule.start) AS year_start,
+    date_part('month'::text, schedule."end") AS month_end,
+    date_part('day'::text, schedule."end") AS day_end,
+    date_part('year'::text, schedule."end") AS year_end,
+    schedule.id,
+    schedule.title
+   FROM schedule;
+
+
+ALTER TABLE sched_dates OWNER TO postgres;
+
+--
 -- Name: sched_simple; Type: VIEW; Schema: public; Owner: postgres
 --
 
@@ -875,6 +896,25 @@ CREATE TABLE transaction_log (
 
 
 ALTER TABLE transaction_log OWNER TO postgres;
+
+--
+-- Name: trans_details; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW trans_details AS
+ SELECT transaction_log.transaction_date,
+    date_part('month'::text, transaction_log.transaction_date) AS month_trans,
+    date_part('day'::text, transaction_log.transaction_date) AS day_trans,
+    date_part('year'::text, transaction_log.transaction_date) AS year_trans,
+    transaction_log.transaction_no,
+    transaction_log.staff_id,
+    to_char((transaction_log.transaction_time)::interval, 'HH12:MI:SS AM'::text) AS "time",
+    transaction_log.transaction_details
+   FROM transaction_log
+  ORDER BY transaction_log.transaction_no;
+
+
+ALTER TABLE trans_details OWNER TO postgres;
 
 --
 -- Name: transaction_log_transaction_no_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -998,6 +1038,15 @@ af78d2a38e4953c40fe70c54195c83b3	29	2016-11-17	mcpedrano
 ef58f7ffe086514aa0164c7fc4f6cea8	14	2016-11-28	mjmatero
 56775887921d4847aff58167bcdc1150	44	2016-11-28	rrroxas
 dbc4d84bfcfe2284ba11beffb853a8c4	44	2016-11-28	rrroxas
+149815eb972b3c370dee3b89d645ae14	4	2016-12-04	mnmacasil
+ca35d8d4087914717010fdb91b14ac22	23	2016-12-01	hbespiritu
+3e22101dc25625f4c82a984ce2dd0353	23	2016-12-01	hbespiritu
+8e576e753c2932a38d6fb13a6bf5b573	23	2016-12-01	hbespiritu
+66f7b045db373d410f4f0c317378f679	29	2016-12-01	mcpedrano
+7f6f70d8bb2a189bd7414a63f36c5b75	29	2016-12-01	mcpedrano
+402df1281dc6d87253e7dca987b359e2	29	2016-12-01	mcpedrano
+eb007223a9ca6ab699c5070ced080113	29	2016-12-01	mcpedrano
+d897133013752d0a321202676961c579	44	2016-12-07	rrroxas
 \.
 
 
@@ -1010,6 +1059,7 @@ fmaglangit	$1$VKOMr8Mo$WgbBwh96jC7Mp5HTXuskL.	Lab Equipment	81dc9bdb52d04dc20036
 rbasadre	$1$YMZpSL8l$y5wQgnPI68sSvEmla34v6.	Furnitures and Fixtures	040b7cf4a55014e185813e0644502ea9	rbbasadre@up.edu.ph
 prallos	$1$xPTVK/Lh$0uDrfmtr5Nuo.O4vzM7Zf/	Non-IT Equipment	a152e841783914146e4bcd4f39100686	pcrallos@up.edu.ph
 fladay	$1$/FcYYjRP$7dZa6KA0FmCriGN0H1sDW1	IT Equipments	c83b2d5bb1fb4d93d9d064593ed6eea2	fldaday@up.edu.ph
+prallos	$1$MZ3ED9sd$OcSp1DgTC2bjTa8l4GGMs/	Aircons	a152e841783914146e4bcd4f39100686	pcrallos@up.edu.ph
 \.
 
 
@@ -1048,7 +1098,8 @@ lgpilapil	16
 -- Data for Name: disposal_requests; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY disposal_requests (id, username, type, office_name, content) FROM stdin;
+COPY disposal_requests (id, username, type, office_name, content, transaction) FROM stdin;
+1	rrroxas	Furnitures and Fixtures	Sciences Cluster - Department of Computer Science	{"listofEquipmentToDispose":[{"article_name":"Chair","property_no":"1235","component_no":"1","description":"A very nice chair","unit_cost":"2000","type":"Furnitures and Fixtures","status":"","qrcode":"269efc0384256ed26a4f1bc2c6d72758","condition":"Working","date_assigned":"2016-10-30T16:00:00.000Z"}]}	request
 \.
 
 
@@ -1056,7 +1107,7 @@ COPY disposal_requests (id, username, type, office_name, content) FROM stdin;
 -- Name: disposal_requests_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('disposal_requests_id_seq', 1, false);
+SELECT pg_catalog.setval('disposal_requests_id_seq', 13, true);
 
 
 --
@@ -1103,12 +1154,6 @@ SELECT pg_catalog.setval('dummy_transaction_trans_num_seq', 3, true);
 --
 
 COPY equipment (qrcode, article_name, property_no, component_no, date_acquired, description, unit_cost, type, condition, image_file) FROM stdin;
-969d53a568dfbaf6bb929d69917b34fa	Aircon	4096	1	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
-67107e5f6f1efb4409c37abd1645b0f5	Aircon	4096	2	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
-02fd6cf9553be2d58efe687b857830f6	Aircon	4096	5	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
-a127c5a2ed0a7a7790327f59706b0b77	Aircon	4096	6	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
-f752167fca2ecaf38964ffaff639b8d8	Aircon	4096	7	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
-69c4bb19e942fea086d5fd85078695a0	Aircon	4096	8	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
 9b9f95bf74798c23c71e69445d2c53d3	Chair	3859	1	2016-11-20	Monoblock Chair, Brown	100	Furnitures and Fixtures	Working	IMG20161122164331.jpg
 4942d5cf1f14e94afa9aaf45dee2b9db	Chair	3859	3	2016-11-20	Monoblock Chair, Brown	100	Furnitures and Fixtures	Working	IMG20161122164331.jpg
 df4fb1d4cc775da225d5c5e70143e44d	Chair	3859	4	2016-11-20	Monoblock Chair, Brown	100	Furnitures and Fixtures	Working	IMG20161122164331.jpg
@@ -1127,15 +1172,30 @@ e67981d241ad5e29f4420a6f4ef2b7cb	Swivel Chair	2048	2	2016-11-17	Gray	1000	Furnit
 af78d2a38e4953c40fe70c54195c83b3	Swivel Chair	2048	6	2016-11-17	Gray	1000	Furnitures and Fixtures	Working	IMG20161122165134.jpg
 24cceab7ffc1118f5daaace13c670885	Bulletin Board	1084	1	2016-11-09	With Glass Cover	3000	Furnitures and Fixtures	Disposed	IMG20161122164802.jpg
 983c25c7ee9644953077c7f3cb15a8db	Bulletin Board	1084	2	2016-11-09	With Glass Cover	3000	Furnitures and Fixtures	Working	IMG20161122164802.jpg
-b7e3524361c9f4681818d388431beeac	Fire Extinguisher	4937	2	2016-11-14	Red	1000	Non-IT Equipment	Disposed	IMG20161122164854.jpg
-790d67b8e374ac145b107e84b846ebd5	Fire Extinguisher	4937	1	2016-11-14	Red	1000	Non-IT Equipment	Disposed	IMG20161122164854.jpg
-d348734a9ee240ebc4c0937a6e755621	Aircon	4096	4	2016-07-20	Carrier	20000	Aircons	Disposed	IMG20161122164342.jpg
-8c433a09bd26b943147c4d9bacb15efc	Aircon	4096	3	2016-07-20	Carrier	20000	Aircons	Disposed	IMG20161122164342.jpg
-1afb6bd07195e9f753b0d55805b5a246	Fire Extinguisher	4937	3	2016-11-14	Red	1000	Non-IT Equipment	Disposed	IMG20161122164854.jpg
-1a54ed0d8ca0bdb0cf54794977feb05a	Fire Extinguisher	4937	4	2016-11-14	Red	1000	Non-IT Equipment	Disposed	IMG20161122164854.jpg
 654784daf0b133e42d02214b22cb03a6	Swivel Chair	2048	4	2016-11-17	Gray	1000	Furnitures and Fixtures	Disposed	IMG20161122165134.jpg
 7813d1590d28a7dd372ad54b5d29d033	Fan	6969	\N	2016-11-27	fast	1200	Furnitures and Fixtures	Working	IMG20161122164331.jpg
 dbc4d84bfcfe2284ba11beffb853a8c4	Fax Machine	4444	\N	2016-11-16	Laser Fax with built-in handset.	9850	Non-IT Equipment	Working	brother-fax-2840-laser-fax-machine-with-print-and-copy-capabilities-9468-7155615-1f7ded4c526ac96027df61c255f45bc1-catalog_233.jpg
+149815eb972b3c370dee3b89d645ae14	Heater	2323	\N	2016-12-04	Stainless, Black	400	Non-IT Equipment	Working	heater.jpg
+b7e3524361c9f4681818d388431beeac	Fire Extinguisher	4937	2	2016-11-14	Red	1000	Non-IT Equipment	Working	IMG20161122164854.jpg
+790d67b8e374ac145b107e84b846ebd5	Fire Extinguisher	4937	1	2016-11-14	Red	1000	Non-IT Equipment	Working	IMG20161122164854.jpg
+1afb6bd07195e9f753b0d55805b5a246	Fire Extinguisher	4937	3	2016-11-14	Red	1000	Non-IT Equipment	Working	IMG20161122164854.jpg
+1a54ed0d8ca0bdb0cf54794977feb05a	Fire Extinguisher	4937	4	2016-11-14	Red	1000	Non-IT Equipment	Working	IMG20161122164854.jpg
+969d53a568dfbaf6bb929d69917b34fa	Aircon	4096	1	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
+67107e5f6f1efb4409c37abd1645b0f5	Aircon	4096	2	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
+02fd6cf9553be2d58efe687b857830f6	Aircon	4096	5	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
+a127c5a2ed0a7a7790327f59706b0b77	Aircon	4096	6	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
+f752167fca2ecaf38964ffaff639b8d8	Aircon	4096	7	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
+69c4bb19e942fea086d5fd85078695a0	Aircon	4096	8	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
+d348734a9ee240ebc4c0937a6e755621	Aircon	4096	4	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
+8c433a09bd26b943147c4d9bacb15efc	Aircon	4096	3	2016-07-20	Carrier	20000	Aircons	Working	IMG20161122164342.jpg
+ca35d8d4087914717010fdb91b14ac22	Chair	3456	1	2016-12-01	Computer Chair	800	Furnitures and Fixtures	Working	IMG20161122165134.jpg
+3e22101dc25625f4c82a984ce2dd0353	Chair	3456	2	2016-12-01	Computer Chair	800	Furnitures and Fixtures	Working	IMG20161122165134.jpg
+8e576e753c2932a38d6fb13a6bf5b573	Chair	3456	3	2016-12-01	Computer Chair	800	Furnitures and Fixtures	Working	IMG20161122165134.jpg
+d897133013752d0a321202676961c579	Chair	9989	1	2016-12-01	Monoblock Chair	400	Furnitures and Fixtures	Working	IMG20161122164331.jpg
+66f7b045db373d410f4f0c317378f679	Chair	9989	2	2016-12-01	Monoblock Chair	400	Furnitures and Fixtures	Working	IMG20161122164331.jpg
+7f6f70d8bb2a189bd7414a63f36c5b75	Chair	9989	3	2016-12-01	Monoblock Chair	400	Furnitures and Fixtures	Working	IMG20161122164331.jpg
+402df1281dc6d87253e7dca987b359e2	Chair	9989	4	2016-12-01	Monoblock Chair	400	Furnitures and Fixtures	Working	IMG20161122164331.jpg
+eb007223a9ca6ab699c5070ced080113	Chair	9989	5	2016-12-01	Monoblock Chair	400	Furnitures and Fixtures	Working	IMG20161122164331.jpg
 \.
 
 
@@ -1151,6 +1211,16 @@ COPY equipment_history (record_no, equip_qrcode, start_date, end_date, staff_id,
 6	56775887921d4847aff58167bcdc1150	2016-11-28	\N	rrroxas	44
 5	dbc4d84bfcfe2284ba11beffb853a8c4	2016-11-16	2016-11-28	rcbinagatan	17
 7	dbc4d84bfcfe2284ba11beffb853a8c4	2016-11-28	\N	rrroxas	44
+8	149815eb972b3c370dee3b89d645ae14	2016-12-04	\N	mnmacasil	4
+9	ca35d8d4087914717010fdb91b14ac22	2016-12-01	\N	hbespiritu	23
+10	3e22101dc25625f4c82a984ce2dd0353	2016-12-01	\N	hbespiritu	23
+11	8e576e753c2932a38d6fb13a6bf5b573	2016-12-01	\N	hbespiritu	23
+13	66f7b045db373d410f4f0c317378f679	2016-12-01	\N	mcpedrano	29
+14	7f6f70d8bb2a189bd7414a63f36c5b75	2016-12-01	\N	mcpedrano	29
+15	402df1281dc6d87253e7dca987b359e2	2016-12-01	\N	mcpedrano	29
+16	eb007223a9ca6ab699c5070ced080113	2016-12-01	\N	mcpedrano	29
+12	d897133013752d0a321202676961c579	2016-12-01	2016-12-07	mcpedrano	29
+17	d897133013752d0a321202676961c579	2016-12-07	\N	rrroxas	44
 \.
 
 
@@ -1158,7 +1228,7 @@ COPY equipment_history (record_no, equip_qrcode, start_date, end_date, staff_id,
 -- Name: equipment_history_record_no_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('equipment_history_record_no_seq', 7, true);
+SELECT pg_catalog.setval('equipment_history_record_no_seq', 17, true);
 
 
 --
@@ -1166,7 +1236,7 @@ SELECT pg_catalog.setval('equipment_history_record_no_seq', 7, true);
 --
 
 COPY inventory_details (inventory_id, initiated_by) FROM stdin;
-4	sbmagdadaro
+11	sbmagdadaro
 \.
 
 
@@ -1177,6 +1247,19 @@ COPY inventory_details (inventory_id, initiated_by) FROM stdin;
 COPY mobile_trans (id, username, transaction, parameter, result, remarks, "time") FROM stdin;
 1	mccamantang	Get Equipment Details	269efc0384256ed26a4f1bc2c6d72758	1	Success	2016-11-25 08:41:48.763416
 2	rrroxas	Disposal Request	dbc4d84bfcfe2284ba11beffb853a8c4	1	Success	2016-11-28 09:24:53.524918
+3	rrroxas	Disposal Request		For checking	Success	2016-12-05 09:46:17.420614
+4	rrroxas	Disposal Request		For checking	Success	2016-12-05 09:49:45.073001
+5	mcpedrano	Disposal Request		List not recorded	Failed	2016-12-06 06:00:42.356548
+6	sbmagdadaro	Update Equipment Status	149815eb972b3c370dee3b89d645ae14	Updated	Success	2016-12-07 07:28:29.968333
+7	sbmagdadaro	Update Equipment Status	149815eb972b3c370dee3b89d645ae14	Updated	Success	2016-12-07 07:28:32.865988
+8	sbmagdadaro	Update Equipment Status	149815eb972b3c370dee3b89d645ae14	Updated	Success	2016-12-08 07:50:37.269104
+9	sbmagdadaro	Update Equipment Status	149815eb972b3c370dee3b89d645ae14	Updated	Success	2016-12-08 07:50:40.103042
+10	rrroxas	Disposal Request		For checking	Success	2016-12-08 08:37:03.713597
+11	sbmagdadaro	Update Equipment Status	ef58f7ffe086514aa0164c7fc4f6cea8	Updated	Success	2016-12-06 14:07:24.610403
+12	sbmagdadaro	Update Equipment Status	dbc4d84bfcfe2284ba11beffb853a8c4	Updated	Success	2016-12-06 14:08:18.915257
+13	sbmagdadaro	Update Equipment Status	969d53a568dfbaf6bb929d69917b34fa	Not Found	Failed	2016-12-06 17:23:14.742259
+14	sbmagdadaro	Update Equipment Status	969d53a568dfbaf6bb929d69917b34fa	Updated	Success	2016-12-06 17:23:47.159799
+15	sbmagdadaro	Update Equipment Status	969d53a568dfbaf6bb929d69917b34fa	Updated	Success	2016-12-08 02:47:25.527122
 \.
 
 
@@ -1184,7 +1267,7 @@ COPY mobile_trans (id, username, transaction, parameter, result, remarks, "time"
 -- Name: mobile_trans_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('mobile_trans_id_seq', 2, true);
+SELECT pg_catalog.setval('mobile_trans_id_seq', 15, true);
 
 
 --
@@ -1199,7 +1282,6 @@ COPY office (office_id, email, password, office_name, cluster_name, md5, short_o
 26	upcebuhrdo@up.edu.ph	$1$TQ7kd/A5$DKTXnDYKmJn4IN45cNnve0	Human Resource and Development Office	Administration	8f280deac20abff1c000f69d49641c73	HRDO
 27	upcebuitso@up.edu.ph	$1$A9vq9XZi$UoLCYdDyNgTfIyWZdwu6R0	Innovation Technology Support Office	Administration	bdcfaf9e08910498159204aa7a88d5f9	ITSO
 28	upcebulegaloffice@up.edu.ph	$1$Vo39f1qZ$pCM/pFl57uCrpmuhndBY60	Legal Office	Administration	9345b4e983973212313e4c809b94f75d	Legal Office
-29	upcebulibrary@up.edu.ph	$1$.NjbyoWE$VufZNetxZpNOjNxq0KEu31	Library	Administration	2ea7fe2bd051ec076a226b7dab76aaa3	Library
 30	upcebunstp@up.edu.ph	$1$KNENw4wL$cbb1hrkuZvJEL8ilG2nq71	National Service Training Program	Social Sciences	81ad67bdedd7367dbce7cda841584ee8	NSTP Office
 31	upcebuoash@up.edu.ph	$1$MIV6egu.$e6SIn9cPgqMUq95Z.ccDT1	Office of Anti-Sexual Harassment	Administration	029c69acc26d71b938f615bf44ccf21a	OASH
 32	upcebuocep@up.edu.ph	$1$xxT3SehW$0e8AAi0bL16V/L1hGAw2H.	Office of Continuing Education and Pahinungod	Administration	43e58212cc7a767fe98d5c68d609994b	OCEP
@@ -1239,6 +1321,7 @@ COPY office (office_id, email, password, office_name, cluster_name, md5, short_o
 53	upcebuuppss@up.edu.ph	$1$JR1WITHV$4D1mgwM5a4y6JCCU.Ix6H0	Social Sciences - Political Science Department	Social Sciences	67d1600ee0fcd7644f1141aaaf2853ea	Pol Sci Dept.
 54	upcebuspmo@up.edu.ph	$1$iDkGpxj.$oplJBDV0aWZDTLZvJPSbo/	Supply and Property Management Office	Administration	7a1eabc3deb7fd02ceb1e16eafc41073	SPMO
 55	upcebutlrc@up.edu.ph	$1$XMuO83ls$89mOwhRL6LJxVh9vmA8lH1	Teaching and Learning Resource Center	Administration	77306354a57dccde2214fbe3d5427c6c	TLRC
+29	upcebulibrary@gmail.com	$1$.NjbyoWE$VufZNetxZpNOjNxq0KEu31	Library	Administration	2ea7fe2bd051ec076a226b7dab76aaa3	Library
 41	upcebumses@up.edu.ph	$1$GepbMeOB$MTqNnnxVi7.4yTEQSDUHR/	Sciences Cluster - Masters of Sciences in Environmental Science	Sciences	e900e40bc91d3f9f7f0a99fed68a2e96	MSES
 42	upcebubio@up.edu.ph	$1$t2mPkNnA$xbRjZRhFmGF/WBSb/NDUr/	Sciences Cluster - Biology Department	Sciences	8f1c04b89761789593adc6d19f4cefad	Biology Department
 43	upcebuchemlab@up.edu.ph	$1$STj.HHpJ$6AendxVuEKGwJHH.wB1LY1	Sciences Cluster - Chemistry Laboratory	Sciences	d4ac1478a4d8a4f591d35e3d75f3de65	Chem Lab
@@ -1267,8 +1350,6 @@ SELECT pg_catalog.setval('office_office_id_seq', 61, true);
 --
 
 COPY schedule (id, title, start, "end", event_status) FROM stdin;
-2	Disposal	2016-12-29	2016-12-31	Upcoming
-4	Inventory	2016-11-29	2016-11-30	Upcoming
 \.
 
 
@@ -1276,7 +1357,7 @@ COPY schedule (id, title, start, "end", event_status) FROM stdin;
 -- Name: schedule_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('schedule_id_seq', 4, true);
+SELECT pg_catalog.setval('schedule_id_seq', 11, true);
 
 
 --
@@ -1294,66 +1375,66 @@ jrdelgado	$1$3tt1APEN$cfvkNR2LD1uDTnCTEkwdg0	jayvmonterozo@gmail.com	6be3edce907
 --
 
 COPY spmo_staff_assignment (inventory_id, inventory_office, spmo_assigned) FROM stdin;
-4	1	jrdelgado
-4	2	sbmagdadaro
-4	3	jrdelgado
-4	4	jrdelgado
-4	5	sbmagdadaro
-4	6	sbmagdadaro
-4	7	jrdelgado
-4	8	sbmagdadaro
-4	9	sbmagdadaro
-4	10	sbmagdadaro
-4	11	jrdelgado
-4	12	sbmagdadaro
-4	13	jrdelgado
-4	14	sbmagdadaro
-4	15	jrdelgado
-4	16	sbmagdadaro
-4	17	jrdelgado
-4	18	sbmagdadaro
-4	19	sbmagdadaro
-4	20	jrdelgado
-4	21	sbmagdadaro
-4	22	sbmagdadaro
-4	23	jrdelgado
-4	24	sbmagdadaro
-4	25	sbmagdadaro
-4	26	jrdelgado
-4	27	sbmagdadaro
-4	28	jrdelgado
-4	29	sbmagdadaro
-4	30	jrdelgado
-4	31	sbmagdadaro
-4	32	jrdelgado
-4	33	sbmagdadaro
-4	34	jrdelgado
-4	35	sbmagdadaro
-4	36	sbmagdadaro
-4	37	jrdelgado
-4	38	jrdelgado
-4	39	sbmagdadaro
-4	40	jrdelgado
-4	41	sbmagdadaro
-4	42	sbmagdadaro
-4	43	sbmagdadaro
-4	44	jrdelgado
-4	45	jrdelgado
-4	46	jrdelgado
-4	47	sbmagdadaro
-4	48	sbmagdadaro
-4	49	jrdelgado
-4	50	jrdelgado
-4	51	jrdelgado
-4	52	jrdelgado
-4	53	jrdelgado
-4	54	sbmagdadaro
-4	55	sbmagdadaro
-4	56	sbmagdadaro
-4	57	sbmagdadaro
-4	58	jrdelgado
-4	59	sbmagdadaro
-4	60	jrdelgado
+11	1	jrdelgado
+11	2	jrdelgado
+11	3	sbmagdadaro
+11	4	jrdelgado
+11	5	sbmagdadaro
+11	6	sbmagdadaro
+11	7	sbmagdadaro
+11	8	jrdelgado
+11	9	sbmagdadaro
+11	10	jrdelgado
+11	11	sbmagdadaro
+11	12	sbmagdadaro
+11	13	jrdelgado
+11	14	sbmagdadaro
+11	15	sbmagdadaro
+11	16	jrdelgado
+11	17	jrdelgado
+11	18	jrdelgado
+11	19	jrdelgado
+11	20	sbmagdadaro
+11	21	sbmagdadaro
+11	22	sbmagdadaro
+11	23	sbmagdadaro
+11	24	sbmagdadaro
+11	25	jrdelgado
+11	26	jrdelgado
+11	27	sbmagdadaro
+11	28	jrdelgado
+11	29	sbmagdadaro
+11	30	jrdelgado
+11	31	jrdelgado
+11	32	jrdelgado
+11	33	jrdelgado
+11	34	sbmagdadaro
+11	35	sbmagdadaro
+11	36	jrdelgado
+11	37	sbmagdadaro
+11	38	jrdelgado
+11	39	sbmagdadaro
+11	40	jrdelgado
+11	41	jrdelgado
+11	42	sbmagdadaro
+11	43	jrdelgado
+11	44	sbmagdadaro
+11	45	jrdelgado
+11	46	sbmagdadaro
+11	47	jrdelgado
+11	48	sbmagdadaro
+11	49	sbmagdadaro
+11	50	sbmagdadaro
+11	51	jrdelgado
+11	52	sbmagdadaro
+11	53	jrdelgado
+11	54	jrdelgado
+11	55	jrdelgado
+11	56	jrdelgado
+11	57	sbmagdadaro
+11	58	jrdelgado
+11	59	jrdelgado
+11	60	sbmagdadaro
 \.
 
 
@@ -1487,6 +1568,38 @@ COPY transaction_log (transaction_no, staff_id, transaction_date, transaction_ti
 95	sbmagdadaro	2016-11-29	17:34:28.745687	updated a schedule	\N
 98	sbmagdadaro	2016-11-28	17:50:02.205889	updated a schedule	\N
 99	sbmagdadaro	2016-11-28	17:50:02.205889	updated a schedule	\N
+103	sbmagdadaro	2016-12-06	13:33:52.253039	created a schedule	\N
+104	sbmagdadaro	2016-12-07	14:09:08.875692	updated a schedule	\N
+105	sbmagdadaro	2016-12-07	15:17:39.169598	removed a schedule	\N
+106	sbmagdadaro	2016-12-07	15:19:17.020841	added an equipment	ca35d8d4087914717010fdb91b14ac22
+107	sbmagdadaro	2016-12-07	15:19:17.027648	added an equipment	3e22101dc25625f4c82a984ce2dd0353
+108	sbmagdadaro	2016-12-07	15:19:17.034357	added an equipment	8e576e753c2932a38d6fb13a6bf5b573
+109	sbmagdadaro	2016-12-07	15:21:21.126887	created a schedule	\N
+110	sbmagdadaro	2016-12-07	15:31:52.812876	removed a schedule	\N
+111	sbmagdadaro	2016-12-07	15:40:13.390702	created a schedule	\N
+112	sbmagdadaro	2016-12-08	15:40:57.446245	updated a schedule	\N
+113	sbmagdadaro	2016-12-06	21:02:24.047989	removed a schedule	\N
+114	sbmagdadaro	2016-12-06	21:03:43.231668	created a schedule	\N
+115	sbmagdadaro	2016-12-06	21:05:10.423005	removed a schedule	\N
+116	sbmagdadaro	2016-12-06	21:06:09.550491	created a schedule	\N
+117	sbmagdadaro	2016-12-07	00:00:00.543861	updated a schedule	\N
+118	sbmagdadaro	2016-12-07	00:12:00.982883	removed a schedule	\N
+119	sbmagdadaro	2016-12-07	09:45:14.269364	created a schedule	\N
+120	sbmagdadaro	2016-12-07	10:02:12.582809	added an equipment	d897133013752d0a321202676961c579
+121	sbmagdadaro	2016-12-07	10:02:12.587298	added an equipment	66f7b045db373d410f4f0c317378f679
+122	sbmagdadaro	2016-12-07	10:02:12.594343	added an equipment	7f6f70d8bb2a189bd7414a63f36c5b75
+123	sbmagdadaro	2016-12-07	10:02:12.602008	added an equipment	402df1281dc6d87253e7dca987b359e2
+124	sbmagdadaro	2016-12-07	10:02:12.608396	added an equipment	eb007223a9ca6ab699c5070ced080113
+125	sbmagdadaro	2016-12-07	10:02:18.575115	added an equipment	d897133013752d0a321202676961c579
+126	sbmagdadaro	2016-12-07	10:02:18.642072	added an equipment	66f7b045db373d410f4f0c317378f679
+127	sbmagdadaro	2016-12-07	10:02:18.654293	added an equipment	7f6f70d8bb2a189bd7414a63f36c5b75
+128	sbmagdadaro	2016-12-07	10:02:18.66737	added an equipment	402df1281dc6d87253e7dca987b359e2
+129	sbmagdadaro	2016-12-07	10:02:18.67831	added an equipment	eb007223a9ca6ab699c5070ced080113
+130	sbmagdadaro	2016-12-07	10:15:19.416246	moved an equipment	d897133013752d0a321202676961c579
+131	sbmagdadaro	2016-12-07	10:26:20.375819	removed a schedule	\N
+132	sbmagdadaro	2016-12-07	10:34:13.767857	created a schedule	\N
+133	sbmagdadaro	2016-12-08	10:36:18.817485	updated a schedule	\N
+134	sbmagdadaro	2016-12-08	11:15:17.48576	removed a schedule	\N
 \.
 
 
@@ -1494,7 +1607,7 @@ COPY transaction_log (transaction_no, staff_id, transaction_date, transaction_ti
 -- Name: transaction_log_transaction_no_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('transaction_log_transaction_no_seq', 99, true);
+SELECT pg_catalog.setval('transaction_log_transaction_no_seq', 134, true);
 
 
 --
@@ -1502,26 +1615,35 @@ SELECT pg_catalog.setval('transaction_log_transaction_no_seq', 99, true);
 --
 
 COPY working_equipment (qrcode, date_last_inventoried, status) FROM stdin;
-969d53a568dfbaf6bb929d69917b34fa	\N	Found
-67107e5f6f1efb4409c37abd1645b0f5	\N	Found
-02fd6cf9553be2d58efe687b857830f6	\N	Found
-a127c5a2ed0a7a7790327f59706b0b77	\N	Found
-f752167fca2ecaf38964ffaff639b8d8	\N	Found
-69c4bb19e942fea086d5fd85078695a0	\N	Found
-9b9f95bf74798c23c71e69445d2c53d3	\N	Found
-4942d5cf1f14e94afa9aaf45dee2b9db	\N	Found
-df4fb1d4cc775da225d5c5e70143e44d	\N	Found
-98b2a70939d90bf9722d84bc4f97bb47	\N	Found
-ef58f7ffe086514aa0164c7fc4f6cea8	\N	Found
-620d7bfbd5e59107057824ca9dbaf6b8	\N	Found
-983c25c7ee9644953077c7f3cb15a8db	\N	Found
-7f7959e1567f278cff8c64602c15f494	\N	Found
-e67981d241ad5e29f4420a6f4ef2b7cb	\N	Found
-70c8f994a37f42dc783d951ffaa80ef8	\N	Found
-38be5418a8e2601443030c8cba989324	\N	Found
-af78d2a38e4953c40fe70c54195c83b3	\N	Found
-7813d1590d28a7dd372ad54b5d29d033	\N	Found
-dbc4d84bfcfe2284ba11beffb853a8c4	\N	Found
+67107e5f6f1efb4409c37abd1645b0f5	\N	Not Found
+02fd6cf9553be2d58efe687b857830f6	\N	Not Found
+a127c5a2ed0a7a7790327f59706b0b77	\N	Not Found
+f752167fca2ecaf38964ffaff639b8d8	\N	Not Found
+69c4bb19e942fea086d5fd85078695a0	\N	Not Found
+9b9f95bf74798c23c71e69445d2c53d3	\N	Not Found
+4942d5cf1f14e94afa9aaf45dee2b9db	\N	Not Found
+df4fb1d4cc775da225d5c5e70143e44d	\N	Not Found
+98b2a70939d90bf9722d84bc4f97bb47	\N	Not Found
+620d7bfbd5e59107057824ca9dbaf6b8	\N	Not Found
+983c25c7ee9644953077c7f3cb15a8db	\N	Not Found
+7f7959e1567f278cff8c64602c15f494	\N	Not Found
+e67981d241ad5e29f4420a6f4ef2b7cb	\N	Not Found
+70c8f994a37f42dc783d951ffaa80ef8	\N	Not Found
+38be5418a8e2601443030c8cba989324	\N	Not Found
+af78d2a38e4953c40fe70c54195c83b3	\N	Not Found
+7813d1590d28a7dd372ad54b5d29d033	\N	Not Found
+ca35d8d4087914717010fdb91b14ac22	\N	Not Found
+3e22101dc25625f4c82a984ce2dd0353	\N	Not Found
+8e576e753c2932a38d6fb13a6bf5b573	\N	Not Found
+969d53a568dfbaf6bb929d69917b34fa	\N	Not Found
+149815eb972b3c370dee3b89d645ae14	\N	Not Found
+ef58f7ffe086514aa0164c7fc4f6cea8	\N	Not Found
+dbc4d84bfcfe2284ba11beffb853a8c4	\N	Not Found
+d897133013752d0a321202676961c579	\N	Not Found
+66f7b045db373d410f4f0c317378f679	\N	Not Found
+7f6f70d8bb2a189bd7414a63f36c5b75	\N	Not Found
+402df1281dc6d87253e7dca987b359e2	\N	Not Found
+eb007223a9ca6ab699c5070ced080113	\N	Not Found
 \.
 
 
@@ -1539,22 +1661,6 @@ ALTER TABLE ONLY assigned_to
 
 ALTER TABLE ONLY assigned_to
     ADD CONSTRAINT assigned_to_pkey PRIMARY KEY (equipment_qr_code, office_id_holder);
-
-
---
--- Name: checker_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY checker
-    ADD CONSTRAINT checker_email_key UNIQUE (email);
-
-
---
--- Name: checker_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY checker
-    ADD CONSTRAINT checker_pkey PRIMARY KEY (username);
 
 
 --
@@ -1878,14 +1984,6 @@ ALTER TABLE ONLY inventory_details
 
 
 --
--- Name: inventory_details_inventory_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY inventory_details
-    ADD CONSTRAINT inventory_details_inventory_id_fkey FOREIGN KEY (inventory_id) REFERENCES schedule(id) ON DELETE CASCADE;
-
-
---
 -- Name: spmo_staff_assignment_inventory_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1966,7 +2064,6 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 REVOKE ALL ON TABLE office FROM PUBLIC;
 REVOKE ALL ON TABLE office FROM postgres;
 GRANT ALL ON TABLE office TO postgres;
-GRANT SELECT,INSERT ON TABLE office TO client;
 
 
 --
