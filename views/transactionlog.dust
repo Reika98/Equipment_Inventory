@@ -35,21 +35,21 @@
 				<table class="table table-striped table-bordered bootstrap-datatable datatable">
 					<thead>
 					  <tr>
-						  <th>Transaction No.</th>
-						  <th>User</th>
-						  <th>Transaction Date</th>
-						  <th>Transaction Time</th>
-						  <th>Transaction Details</th>
+						  <th><center>ID</center></th>
+						  <th><center>User</center></th>
+						  <th><center>Transaction Date</center></th>
+						  <th><center>Transaction Time</center></th>
+						  <th><center>Transaction Details</center></th>
 					  </tr>
 					</thead>   
 					<tbody>
 					{#transaction}
 					<tr> 
-						<td>{transaction_no}</td>
-						<td>{staff_id}</td>
-						<td>{transaction_date}</td>
-						<td>{transaction_time}</td>
-						<td>{transaction_details}</td>	
+						<td><center>{transaction_no}</center></td>
+						<td><center>{staff_id}</center></td>
+						<td><center>{month_trans} / {day_trans} / {year_trans}</center></td>
+						<td><center>{time}</center></td>
+						<td><center>{transaction_details}</center></td>	
 					</tr>
 					{/transaction}
 					</tbody>
